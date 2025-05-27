@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTF Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Highcharts CSS -->
+    <link href="https://code.highcharts.com/css/highcharts.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Courier New', monospace;
+        }
+        .ctf-header {
+            background-color: #212529;
+            color: #ffffff;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-bottom: 5px solid #0d6efd;
+        }
+        .dashboard-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .chart-container {
+            height: 400px;
+            margin-bottom: 2rem;
+        }
+        .last-updated {
+            font-size: 0.9rem;
+            color: #6c757d;
+            text-align: right;
+        }
+        .footer {
+            background-color: #212529;
+            color: white;
+            padding: 1rem 0;
+            margin-top: 2rem;
+        }
+        .refresh-btn {
+            background-color: #0d6efd;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .back-btn {
+            margin: 1rem 0;
+        }
+        .back-to-home-btn {
+            background-color: #0d6efd;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer; 
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="ctf-header text-center">
+        <div class="container">
+            <h1>Python Control Flow CTF</h1>
+            <p class="lead">Live Dashboard</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="row mb-3">
+            <div class="col">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2>Competition Statistics</h2>
+                    <div>
+                        <span class="last-updated">Last updated: <span id="updateTime">Just now</span></span>
+                        <button id="refreshBtn" class="refresh-btn ms-2">⟳ Refresh</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Leaderboard Chart -->
+        <div class="dashboard-container">
+            <h3>Leaderboard</h3>
+            <div id="leaderboardChart" class="chart-container"></div>
+        </div>
+
+        <!-- Progress Stats -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="dashboard-container">
+                    <h3>Progress Stats</h3>
+                    <div id="progressChart" class="chart-container"></div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="dashboard-container">
+                    <h3>Difficulty Breakdown</h3>
+                    <div id="difficultyChart" class="chart-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add this before the footer section -->
+    <div class="container">
+        <a href="index.html" class="back-to-home-btn">← Back to Home</a>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer text-center">
+        <div class="container">
+            <p>CMN115/CBS105 Introduction to Programming 2025 | Prepared by Mr. Eremas Tade</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS + Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Highcharts JS -->
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    
+    <!-- Dashboard Script -->
+    <script>
+        // Store chart references globally
+        window.leaderboardChart = null;
+        window.progressChart = null;
+        window.difficultyChart = null;
+
+        // Polling function for live updates
+        function pollLeaderboard() {
+            fetch('https://ctf-backend-rose.vercel.app/api/teams')
+                .then(response => response.json())
+                .then(teams => {
+                    updateDashboardData(teams);
+                    setTimeout(pollLeaderboard, 5000); // Poll every 5 seconds
+                })
+                .catch(err => {
+                    console.error('Polling error:', err);
+                    setTimeout(pollLeaderboard, 10000); // Retry after 10 seconds on error
+                });
+        }
+
+        // Update all charts with new data
+        function updateDashboardData(teams) {
+            // Update timestamp
+            document.getElementById('updateTime').textContent = new Date().toLocaleTimeString();
+            
+            // Calculate stats for other charts
+            const totalFlags = teams.reduce((sum, team) => sum + (team.flags ? team.flags.length : 0), 0);
+            const progressData = {
+                solved: totalFlags,
+                unsolved: 30 - totalFlags // Assuming 30 total flags
+            };
+            
+            const difficultyData = {
+                easy: { solved: 0, total: 10 },
+                medium: { solved: 0, total: 15 },
+                hard: { solved: 0, total: 5 }
+            };
+            
+            // Count flags by difficulty (simplified - in real app this would come from backend)
+            teams.forEach(team => {
+                if (team.flags) {
+                    // This is simplified - actual implementation would check flag difficulty
+                    difficultyData.easy.solved += Math.min(team.flags.length, 5);
+                    difficultyData.medium.solved += Math.max(0, Math.min(team.flags.length - 5, 10));
+                    difficultyData.hard.solved += Math.max(0, team.flags.length - 15);
+                }
+            });
+
+            // Update leaderboard chart
+            if (window.leaderboardChart) {
+                window.leaderboardChart.update({
+                    series: [{
+                        data: teams.map(team => team.score || 0)
+                    }],
+                    xAxis: {
+                        categories: teams.map(team => team.name)
+                    }
+                });
+            } else {
+                initLeaderboardChart(teams);
+            }
+
+            // Update progress chart
+            if (window.progressChart) {
+                window.progressChart.series[0].setData([
+                    { name: 'Solved', y: progressData.solved, color: '#28a745' },
+                    { name: 'Unsolved', y: progressData.unsolved, color: '#dc3545' }
+                ]);
+            } else {
+                initProgressChart(progressData);
+            }
+
+            // Update difficulty chart
+            if (window.difficultyChart) {
+                window.difficultyChart.series[0].setData([
+                    difficultyData.easy.solved,
+                    difficultyData.medium.solved,
+                    difficultyData.hard.solved
+                ]);
+                window.difficultyChart.series[1].setData([
+                    difficultyData.easy.total - difficultyData.easy.solved,
+                    difficultyData.medium.total - difficultyData.medium.solved,
+                    difficultyData.hard.total - difficultyData.hard.solved
+                ]);
+            } else {
+                initDifficultyChart(difficultyData);
+            }
+        }
+
+        // Initialize charts
+        function initLeaderboardChart(teams) {
+            window.leaderboardChart = Highcharts.chart('leaderboardChart', {
+                chart: { type: 'bar' },
+                title: { text: '' },
+                xAxis: {
+                    categories: teams.map(team => team.name),
+                    title: { text: null }
+                },
+                yAxis: {
+                    min: 0,
+                    title: { text: 'Points' },
+                    allowDecimals: false
+                },
+                legend: { enabled: false },
+                tooltip: {
+                    valueSuffix: ' points'
+                },
+                series: [{
+                    name: 'Points',
+                    data: teams.map(team => team.score || 0),
+                    colorByPoint: true,
+                    colors: [
+                        '#0d6efd', '#6610f2', '#6f42c1', '#d63384', '#dc3545'
+                    ]
+                }],
+                plotOptions: {
+                    bar: {
+                        dataLabels: { enabled: true }
+                    }
+                }
+            });
+        }
+
+        function initProgressChart(data) {
+            window.progressChart = Highcharts.chart('progressChart', {
+                chart: { type: 'pie' },
+                title: { text: 'Flags Progress' },
+                tooltip: {
+                    pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+                },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: true,
+                            format: '<b>{point.name}</b>: {point.y}'
+                        }
+                    }
+                },
+                series: [{
+                    name: 'Flags',
+                    colorByPoint: true,
+                    data: [{
+                        name: 'Solved',
+                        y: data.solved,
+                        color: '#28a745'
+                    }, {
+                        name: 'Unsolved',
+                        y: data.unsolved,
+                        color: '#dc3545'
+                    }]
+                }]
+            });
+        }
+
+        function initDifficultyChart(data) {
+            window.difficultyChart = Highcharts.chart('difficultyChart', {
+                chart: { type: 'column' },
+                title: { text: 'Flags by Difficulty' },
+                xAxis: {
+                    categories: ['Easy', 'Medium', 'Hard']
+                },
+                yAxis: {
+                    min: 0,
+                    title: { text: 'Flags Captured' },
+                    allowDecimals: false,
+                    stackLabels: {
+                        enabled: true,
+                        style: {
+                            fontWeight: 'bold',
+                            color: 'gray'
+                        }
+                    }
+                },
+                legend: {
+                    align: 'right',
+                    verticalAlign: 'top',
+                    layout: 'vertical'
+                },
+                tooltip: {
+                    headerFormat: '<b>{point.x}</b><br/>',
+                    pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}'
+                },
+                plotOptions: {
+                    column: {
+                        stacking: 'normal',
+                        dataLabels: {
+                            enabled: true
+                        }
+                    }
+                },
+                series: [{
+                    name: 'Solved',
+                    data: [
+                        data.easy.solved,
+                        data.medium.solved,
+                        data.hard.solved
+                    ],
+                    color: '#28a745'
+                }, {
+                    name: 'Remaining',
+                    data: [
+                        data.easy.total - data.easy.solved,
+                        data.medium.total - data.medium.solved,
+                        data.hard.total - data.hard.solved
+                    ],
+                    color: '#dc3545'
+                }]
+            });
+        }
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Start polling for updates
+            pollLeaderboard();
+            
+            // Manual refresh button
+            document.getElementById('refreshBtn').addEventListener('click', function() {
+                fetch('https://ctf-backend-rose.vercel.app/api/teams')
+                    .then(response => response.json())
+                    .then(teams => {
+                        updateDashboardData(teams);
+                    });
+            });
+        });
+    </script>
+</body>
+</html>

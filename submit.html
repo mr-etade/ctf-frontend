@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTF Flag Submission</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Courier New', monospace;
+        }
+        .ctf-header {
+            background-color: #212529;
+            color: #ffffff;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-bottom: 5px solid #0d6efd;
+        }
+        .submission-box {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin: 2rem auto;
+            max-width: 600px;
+        }
+        .btn-submit {
+            background-color: #0d6efd;
+            color: white;
+            font-weight: bold;
+            padding: 0.5rem 2rem;
+        }
+        .btn-submit:hover {
+            background-color: #0b5ed7;
+            color: white;
+        }
+        .flag-input {
+            font-family: monospace;
+        }
+        .footer {
+            background-color: #212529;
+            color: white;
+            padding: 1rem 0;
+            margin-top: 2rem;
+        }
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+        .back-to-home-btn {
+            background-color: #0d6efd;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer; 
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="ctf-header text-center">
+        <div class="container">
+            <h1>Python Control Flow CTF</h1>
+            <p class="lead">Flag Submission</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="submission-box">
+            <h2 class="text-center mb-4">Submit Your Flag</h2>
+            
+            <form id="flagForm">
+                <div class="mb-3">
+                    <label for="flagInput" class="form-label">Flag</label>
+                    <input type="text" class="form-control flag-input" id="flagInput" 
+                           placeholder="CTF{example_flag}" required>
+                    <div class="form-text">Enter the flag you've captured (case-sensitive)</div>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-submit">Submit Flag</button>
+                </div>
+            </form>
+
+            <div class="mt-4">
+                <h5>Flag Format:</h5>
+                <p>All flags follow this pattern: <code>CTF{s0m3_t3xt_h3r3}</code></p>
+                <ul>
+                    <li>Starts with <code>CTF{</code></li>
+                    <li>Ends with <code>}</code></li>
+                    <li>Contains alphanumeric characters and underscores</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast align-items-center text-white bg-success" id="successToast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                Flag submitted successfully!
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+
+    <div class="toast align-items-center text-white bg-danger" id="errorToast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                Invalid flag! Try again.
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+
+    <!-- Add this before the footer section -->
+    <div class="container">
+        <a href="index.html" class="back-to-home-btn">← Back to Home</a>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer text-center">
+        <div class="container">
+            <p>CMN115/CBS105 Introduction to Programming 2025 | Prepared by Mr. Eremas Tade</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS + Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Flag Validation Script -->
+    <script>
+        // Initialize toasts
+        const successToast = new bootstrap.Toast(document.getElementById('successToast'));
+        const errorToast = new bootstrap.Toast(document.getElementById('errorToast'));
+
+        document.getElementById('flagForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const flagInput = document.getElementById('flagInput');
+        const submittedFlag = flagInput.value.trim();
+        const teamName = localStorage.getItem('ctfTeamName');
+        
+        if (!teamName) {
+            showError('Please register your team first');
+            return;
+        }
+
+        // Basic flag format validation
+        if (!submittedFlag.startsWith("CTF{") || !submittedFlag.endsWith("}")) {
+            showError("Flag must start with 'CTF{' and end with '}'");
+            return;
+        }
+
+        try {
+            const response = await fetch('http://https://ctf-backend-rose.vercel.app/api/flags/submit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                flag: submittedFlag,
+                teamName: teamName
+            })
+            });
+
+            if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Submission failed');
+            }
+
+            const result = await response.json();
+            showSuccess(`Flag captured! +${result.points} points`);
+            flagInput.value = '';
+        } catch (err) {
+            showError(err.message);
+        }
+        });
+
+        function showSuccess(message) {
+        document.getElementById('successToast').querySelector('.toast-body').textContent = message;
+        successToast.show();
+        }
+
+        function showError(message) {
+        document.getElementById('errorToast').querySelector('.toast-body').textContent = message;
+        errorToast.show();
+        }
+    </script>
+</body>
+</html>
