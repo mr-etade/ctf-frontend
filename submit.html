@@ -149,8 +149,9 @@
         const teamName = localStorage.getItem('ctfTeamName');
         
         if (!teamName) {
-            showError('Please register your team first');
-            return;
+        showError('Please register your team first');
+        window.location.href = 'register.html'; // Redirect if not registered
+        return;
         }
 
         // Basic flag format validation
