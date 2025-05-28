@@ -111,6 +111,12 @@
     
     <!-- Registration Script -->
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+        if (localStorage.getItem('ctfTeamName')) {
+            window.location.href = 'index.html';
+            }
+        });
+
         document.getElementById('registrationForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         
@@ -152,6 +158,24 @@
             }
         }
         });
+    </script>
+    <script>
+    // Check if team is registered
+    document.addEventListener('DOMContentLoaded', function() {
+        const teamName = localStorage.getItem('ctfTeamName');
+        if (teamName) {
+            document.getElementById('teamDisplay').style.display = 'block';
+            document.getElementById('teamNameDisplay').textContent = teamName;
+            
+            // Hide register link if on index.html
+            if (window.location.pathname.includes('index.html')) {
+                const registerLink = document.querySelector('a[href="register.html"]');
+                if (registerLink) {
+                    registerLink.style.display = 'none';
+                }
+            }
+        }
+    });
     </script>
 </body>
 </html>
