@@ -181,8 +181,9 @@
             showSuccess(`Flag captured! +${result.points} points`);
             flagInput.value = '';
         } catch (err) {
-            showError(err.message);
-        }
+            console.error('API Error:', err);
+            alert(`Error: ${err.message}`);
+            }
         });
 
         function showSuccess(message) {
