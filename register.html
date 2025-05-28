@@ -140,7 +140,8 @@
             // Store team name in localStorage
             localStorage.setItem('ctfTeamName', teamData.name);
             } catch (err) {
-            alert(err.message);
+            console.error('API Error:', err);
+            alert(`Error: ${err.message}`);
             }
         }
         });
