@@ -117,7 +117,10 @@
                 headers: {
                 'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ name: teamName })
+                body: JSON.stringify({ 
+                name: teamName,
+                password: 'default_password'
+                })
             });
 
             if (!response.ok) {
