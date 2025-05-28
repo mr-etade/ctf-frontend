@@ -63,6 +63,9 @@
         <div class="container">
             <h1>Python Control Flow CTF</h1>
             <p class="lead">A 60-minute Capture The Flag event on Conditional and Iterative Statements</p>
+            <div id="teamDisplay" class="mt-2" style="display: none;">
+                <span class="badge bg-primary">Team: <span id="teamNameDisplay"></span></span>
+            </div>
         </div>
     </header>
 
@@ -160,6 +163,24 @@
                 document.getElementById("countdown").style.color = "white";
             }
         }, 1000);
+    </script>
+    <script>
+    // Check if team is registered
+    document.addEventListener('DOMContentLoaded', function() {
+        const teamName = localStorage.getItem('ctfTeamName');
+        if (teamName) {
+            document.getElementById('teamDisplay').style.display = 'block';
+            document.getElementById('teamNameDisplay').textContent = teamName;
+            
+            // Hide register link if on index.html
+            if (window.location.pathname.includes('index.html')) {
+                const registerLink = document.querySelector('a[href="register.html"]');
+                if (registerLink) {
+                    registerLink.style.display = 'none';
+                }
+            }
+        }
+    });
     </script>
 </body>
 </html>
