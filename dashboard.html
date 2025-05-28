@@ -70,6 +70,9 @@
         <div class="container">
             <h1>Python Control Flow CTF</h1>
             <p class="lead">Live Dashboard</p>
+            <div id="teamDisplay" class="mt-2" style="display: none;">
+                <span class="badge bg-primary">Team: <span id="teamNameDisplay"></span></span>
+            </div>
         </div>
     </header>
 
@@ -132,6 +135,15 @@
     
     <!-- Dashboard Script -->
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+        if (!localStorage.getItem('ctfTeamName')) {
+            alert('Please register your team first');
+            window.location.href = 'register.html';
+        } else {
+            pollLeaderboard();
+            }
+        });
+
         // Store chart references globally
         window.leaderboardChart = null;
         window.progressChart = null;
@@ -153,33 +165,40 @@
 
         // Update all charts with new data
         function updateDashboardData(teams) {
+            const currentTeam = localStorage.getItem('ctfTeamName');
+            const currentTeamData = teams.find(team => team.name === currentTeam) || {};
+            
             // Update timestamp
             document.getElementById('updateTime').textContent = new Date().toLocaleTimeString();
             
-            // Calculate stats for other charts
-            const totalFlags = teams.reduce((sum, team) => sum + (team.flags ? team.flags.length : 0), 0);
+            // Calculate stats for current team only
+            const teamFlags = currentTeamData.flags || [];
             const progressData = {
-                solved: totalFlags,
-                unsolved: 30 - totalFlags // Assuming 30 total flags
+                solved: teamFlags.length,
+                unsolved: 30 - teamFlags.length // Assuming 30 total flags
             };
             
+            // Simplified difficulty breakdown for current team
             const difficultyData = {
                 easy: { solved: 0, total: 10 },
                 medium: { solved: 0, total: 15 },
                 hard: { solved: 0, total: 5 }
             };
             
-            // Count flags by difficulty (simplified - in real app this would come from backend)
-            teams.forEach(team => {
-                if (team.flags) {
-                    // This is simplified - actual implementation would check flag difficulty
-                    difficultyData.easy.solved += Math.min(team.flags.length, 5);
-                    difficultyData.medium.solved += Math.max(0, Math.min(team.flags.length - 5, 10));
-                    difficultyData.hard.solved += Math.max(0, team.flags.length - 15);
+            // Count flags by difficulty for current team
+            teamFlags.forEach(flag => {
+                // This is simplified - you should have difficulty info in your flag data
+                // For now, we'll just distribute them evenly
+                if (difficultyData.easy.solved < 10) {
+                    difficultyData.easy.solved++;
+                } else if (difficultyData.medium.solved < 15) {
+                    difficultyData.medium.solved++;
+                } else {
+                    difficultyData.hard.solved++;
                 }
             });
 
-            // Update leaderboard chart
+            // Update leaderboard chart with all teams
             if (window.leaderboardChart) {
                 window.leaderboardChart.update({
                     series: [{
@@ -193,17 +212,18 @@
                 initLeaderboardChart(teams);
             }
 
-            // Update progress chart
+            // Update progress chart with current team data only
             if (window.progressChart) {
                 window.progressChart.series[0].setData([
                     { name: 'Solved', y: progressData.solved, color: '#28a745' },
                     { name: 'Unsolved', y: progressData.unsolved, color: '#dc3545' }
                 ]);
+                window.progressChart.setTitle({ text: `Your Progress: ${currentTeam}` });
             } else {
-                initProgressChart(progressData);
+                initProgressChart(progressData, currentTeam);
             }
 
-            // Update difficulty chart
+            // Update difficulty chart with current team data only
             if (window.difficultyChart) {
                 window.difficultyChart.series[0].setData([
                     difficultyData.easy.solved,
@@ -215,16 +235,20 @@
                     difficultyData.medium.total - difficultyData.medium.solved,
                     difficultyData.hard.total - difficultyData.hard.solved
                 ]);
+                window.difficultyChart.setTitle({ text: `Your Difficulty Breakdown: ${currentTeam}` });
             } else {
-                initDifficultyChart(difficultyData);
+                initDifficultyChart(difficultyData, currentTeam);
             }
         }
 
         // Initialize charts
         function initLeaderboardChart(teams) {
             window.leaderboardChart = Highcharts.chart('leaderboardChart', {
-                chart: { type: 'bar' },
-                title: { text: '' },
+                chart: { 
+                    type: 'bar',
+                    height: 400 + (teams.length * 20) // Dynamic height based on number of teams
+                },
+                title: { text: 'Team Leaderboard' },
                 xAxis: {
                     categories: teams.map(team => team.name),
                     title: { text: null }
@@ -236,28 +260,41 @@
                 },
                 legend: { enabled: false },
                 tooltip: {
-                    valueSuffix: ' points'
+                    formatter: function() {
+                        const team = teams.find(t => t.name === this.key);
+                        return `<b>${this.key}</b><br/>Points: ${this.y}<br/>Flags: ${team.flags ? team.flags.length : 0}`;
+                    }
+                },
+                plotOptions: {
+                    bar: {
+                        dataLabels: { 
+                            enabled: true,
+                            formatter: function() {
+                                return `${this.key}: ${this.y} pts`;
+                            }
+                        },
+                        colorByPoint: true,
+                        colors: teams.map((team, i) => {
+                            const currentTeam = localStorage.getItem('ctfTeamName');
+                            return team.name === currentTeam ? '#FFD700' : // Gold for current team
+                                Highcharts.getOptions().colors[i % Highcharts.getOptions().colors.length];
+                        })
+                    }
                 },
                 series: [{
                     name: 'Points',
-                    data: teams.map(team => team.score || 0),
-                    colorByPoint: true,
-                    colors: [
-                        '#0d6efd', '#6610f2', '#6f42c1', '#d63384', '#dc3545'
-                    ]
-                }],
-                plotOptions: {
-                    bar: {
-                        dataLabels: { enabled: true }
-                    }
-                }
+                    data: teams.map(team => ({
+                        name: team.name,
+                        y: team.score || 0
+                    }))
+                }]
             });
         }
 
         function initProgressChart(data) {
             window.progressChart = Highcharts.chart('progressChart', {
                 chart: { type: 'pie' },
-                title: { text: 'Flags Progress' },
+                title: { text: `Your Progress: ${teamName}` },
                 tooltip: {
                     pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
                 },
@@ -290,7 +327,7 @@
         function initDifficultyChart(data) {
             window.difficultyChart = Highcharts.chart('difficultyChart', {
                 chart: { type: 'column' },
-                title: { text: 'Flags by Difficulty' },
+                title: { text: `Your Difficulty Breakdown: ${teamName}` },
                 xAxis: {
                     categories: ['Easy', 'Medium', 'Hard']
                 },
@@ -357,6 +394,24 @@
                     });
             });
         });
+    </script>
+    <script>
+    // Check if team is registered
+    document.addEventListener('DOMContentLoaded', function() {
+        const teamName = localStorage.getItem('ctfTeamName');
+        if (teamName) {
+            document.getElementById('teamDisplay').style.display = 'block';
+            document.getElementById('teamNameDisplay').textContent = teamName;
+            
+            // Hide register link if on index.html
+            if (window.location.pathname.includes('index.html')) {
+                const registerLink = document.querySelector('a[href="register.html"]');
+                if (registerLink) {
+                    registerLink.style.display = 'none';
+                }
+            }
+        }
+    });
     </script>
 </body>
 </html>
