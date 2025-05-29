@@ -138,31 +138,71 @@
     <!-- Bootstrap JS + Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Countdown Timer Script -->
+    <!-- Countdown Timer Script with WebSocket -->
     <script>
-        // Set the countdown time (60 minutes in milliseconds)
-        let timeLeft = 60 * 60 * 1000;
+        // WebSocket connection
+        let ws;
+        let timeLeft = 60 * 60 * 1000; // Default 60 minutes
         
-        // Update the countdown every second
-        const countdown = setInterval(function() {
-            timeLeft -= 1000;
+        function connectWebSocket() {
+            ws = new WebSocket('wss://ctf-backend-rose.vercel.app');
             
-            // Calculate minutes and seconds
+            ws.onopen = () => {
+                console.log('WebSocket connected');
+            };
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === 'timer') {
+                    timeLeft = data.data.timeLeft;
+                    updateTimerDisplay();
+                }
+            };
+            
+            ws.onclose = () => {
+                console.log('WebSocket disconnected. Reconnecting...');
+                setTimeout(connectWebSocket, 3000);
+            };
+            
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+                ws.close();
+            };
+        }
+        
+        // Initialize timer display
+        function updateTimerDisplay() {
             const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
             
-            // Display the result
             document.getElementById("countdown").innerHTML = 
                 `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
             
-            // If the countdown is finished
             if (timeLeft <= 0) {
-                clearInterval(countdown);
                 document.getElementById("countdown").innerHTML = "TIME'S UP!";
                 document.getElementById("countdown").style.backgroundColor = "#dc3545";
                 document.getElementById("countdown").style.color = "white";
             }
-        }, 1000);
+        }
+        
+        // Initial connection
+        document.addEventListener('DOMContentLoaded', function() {
+            connectWebSocket();
+            
+            // Check if team is registered
+            const teamName = localStorage.getItem('ctfTeamName');
+            if (teamName) {
+                document.getElementById('teamDisplay').style.display = 'block';
+                document.getElementById('teamNameDisplay').textContent = teamName;
+                
+                if (window.location.pathname.includes('index.html')) {
+                    const registerLink = document.querySelector('a[href="register.html"]');
+                    if (registerLink) {
+                        registerLink.style.display = 'none';
+                    }
+                }
+            }
+        });
     </script>
     <script>
     // Check if team is registered
