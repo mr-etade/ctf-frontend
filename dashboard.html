@@ -155,12 +155,39 @@
     <!-- Dashboard Script -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            if (!localStorage.getItem('ctfTeamName')) {
+            // Check if team is registered
+            const teamName = localStorage.getItem('ctfTeamName');
+            if (!teamName) {
                 alert('Please register your team first');
                 window.location.href = 'register.html';
-            } else {
-                pollLeaderboard();
+                return;
             }
+
+            // Show team name in header
+            document.getElementById('teamDisplay').style.display = 'block';
+            document.getElementById('teamNameDisplay').textContent = teamName;
+            
+            // Hide register link if on index.html
+            if (window.location.pathname.includes('index.html')) {
+                const registerLink = document.querySelector('a[href="register.html"]');
+                if (registerLink) {
+                    registerLink.style.display = 'none';
+                }
+            }
+
+            // Set Highcharts global options
+            Highcharts.setOptions({
+                tooltip: {
+                    backgroundColor: 'white',
+                    style: {
+                        color: '#333',
+                        fontSize: '12px'
+                    }
+                }
+            });
+
+            // Start polling
+            pollLeaderboard();
         });
 
         // Update the Highcharts global options at the beginning of your script
@@ -496,15 +523,6 @@
                 .then(teams => {
                     updateDashboardData(teams);
                 });
-        });
-
-        // Check if team is registered
-        document.addEventListener('DOMContentLoaded', function() {
-            const teamName = localStorage.getItem('ctfTeamName');
-            if (teamName) {
-                document.getElementById('teamDisplay').style.display = 'block';
-                document.getElementById('teamNameDisplay').textContent = teamName;
-            }
         });
     </script>
     <script>
