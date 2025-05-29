@@ -137,49 +137,16 @@
 
     <!-- Bootstrap JS + Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 
     <script>
     // Set your actual admin password here
     const ADMIN_PASSWORD = "admin123";
 
-    // WebSocket connection for admin
-    let ws;
     let timeLeft = 60 * 60 * 1000; // 1 hour in ms
     let isTimerRunning = false;
     let timerInterval = null;
-
-    function connectWebSocket() {
-        ws = new WebSocket('wss://ctf-backend-rose.vercel.app');
-        
-        ws.onopen = () => {
-            console.log('Admin WebSocket connected');
-            // Request current timer state when connected
-            ws.send(JSON.stringify({ type: 'getTimer' }));
-        };
-        
-        ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            if (data.type === 'timer') {
-                timeLeft = data.data.timeLeft;
-                isTimerRunning = data.data.isRunning;
-                updateTimerDisplay();
-                handleTimerInterval();
-            } else if (data.type === 'leaderboard') {
-                updateLeaderboardTable(data.data.leaderboard || []);
-                updateChart(data.data.leaderboard || []);
-            }
-        };
-        
-        ws.onclose = () => {
-            console.log('WebSocket disconnected. Reconnecting...');
-            setTimeout(connectWebSocket, 3000);
-        };
-        
-        ws.onerror = (error) => {
-            console.error('WebSocket error:', error);
-            ws.close();
-        };
-    }
+    let socket;
 
     function updateTimerDisplay() {
         const hours = Math.floor(timeLeft / (1000 * 60 * 60));
@@ -210,48 +177,63 @@
 
     // Timer control functions
     function startTimer() {
-        fetch('https://ctf-backend-rose.vercel.app/api/timer/start', { method: 'POST' })
-            .then(() => {
-                isTimerRunning = true;
-                handleTimerInterval();
-            });
+        fetch('https://ctf-backend-rose.vercel.app/api/timer/start', { 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ password: ADMIN_PASSWORD })
+        });
     }
 
     function pauseTimer() {
-        fetch('https://ctf-backend-rose.vercel.app/api/timer/pause', { method: 'POST' })
-            .then(() => {
-                isTimerRunning = false;
-                handleTimerInterval();
-            });
+        fetch('https://ctf-backend-rose.vercel.app/api/timer/pause', { 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ password: ADMIN_PASSWORD })
+        });
     }
 
     function resetTimer() {
-        fetch('https://ctf-backend-rose.vercel.app/api/timer/reset', { method: 'POST' })
-            .then(() => {
-                timeLeft = 60 * 60 * 1000;
-                isTimerRunning = false;
-                updateTimerDisplay();
-                handleTimerInterval();
-            });
+        fetch('https://ctf-backend-rose.vercel.app/api/timer/reset', { 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ password: ADMIN_PASSWORD })
+        });
     }
 
     // Leaderboard update
-    function updateLeaderboardTable(leaderboard) {
+    function updateLeaderboardTable(teams) {
         const tbody = document.querySelector('#leaderboardTable tbody');
         tbody.innerHTML = '';
-        leaderboard.forEach((team, idx) => {
+        
+        if (!teams || teams.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" class="text-center">No teams registered yet</td></tr>';
+            return;
+        }
+
+        teams.forEach((team, idx) => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${idx + 1}</td>
-                <td>${team.teamName}</td>
-                <td>${team.score}</td>
+                <td>${team.name || team.teamName || 'Unknown'}</td>
+                <td>${team.score || 0}</td>
             `;
             tbody.appendChild(tr);
         });
     }
 
     // Highcharts
-    function updateChart(leaderboard) {
+    function updateChart(teams) {
+        if (!teams || teams.length === 0) {
+            document.getElementById('chartContainer').innerHTML = '<p class="text-center">No team data available</p>';
+            return;
+        }
+
         Highcharts.chart('chartContainer', {
             chart: { 
                 type: 'bar',
@@ -265,7 +247,7 @@
                 }
             },
             xAxis: {
-                categories: leaderboard.map(team => team.teamName),
+                categories: teams.map(team => team.name || team.teamName),
                 title: { 
                     text: 'Team',
                     style: { 
@@ -306,7 +288,7 @@
             },
             series: [{
                 name: 'Score',
-                data: leaderboard.map(team => team.score),
+                data: teams.map(team => team.score || 0),
                 color: '#0d6efd'
             }],
             credits: { enabled: false }
@@ -339,12 +321,44 @@
             colors: ['#0d6efd', '#6c757d', '#28a745', '#ffc107', '#dc3545']
         });
 
-        connectWebSocket();
+        // Initialize Socket.io connection
+        socket = io('https://ctf-backend-rose.vercel.app', {
+            withCredentials: true,
+            transports: ['websocket']
+        });
+
+        socket.on('connect', () => {
+            console.log('Connected to WebSocket');
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from WebSocket');
+        });
+
+        socket.on('timer', (data) => {
+            timeLeft = data.timeLeft;
+            isTimerRunning = data.isRunning;
+            updateTimerDisplay();
+            handleTimerInterval();
+        });
+
+        socket.on('leaderboard', (teams) => {
+            updateLeaderboardTable(teams);
+            updateChart(teams);
+        });
 
         // Set up button event listeners
         document.getElementById('startTimerBtn').addEventListener('click', startTimer);
         document.getElementById('pauseTimerBtn').addEventListener('click', pauseTimer);
         document.getElementById('resetTimerBtn').addEventListener('click', resetTimer);
+
+        // Initial data fetch
+        fetch('https://ctf-backend-rose.vercel.app/api/teams')
+            .then(response => response.json())
+            .then(teams => {
+                updateLeaderboardTable(teams);
+                updateChart(teams);
+            });
     });
     </script>
 </body>
