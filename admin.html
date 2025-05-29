@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Highcharts CDN -->
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <!--
+        Your original styling is preserved below.
+        If you had your own CSS file or <style> block, keep it as is.
+    -->
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #282c34;
+            color: #f8f8f2;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            background: #23272e;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+            padding: 32px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 32px;
+            color: #61dafb;
+            letter-spacing: 2px;
+        }
+        .timer-controls {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .timer-controls button {
+            padding: 10px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            background: #61dafb;
+            color: #23272e;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .timer-controls button:hover {
+            background: #21a1c4;
+        }
+        #timerDisplay {
+            font-size: 36px;
+            text-align: center;
+            margin-bottom: 32px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: #ffb86c;
+        }
+        #leaderboard {
+            margin-top: 32px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #44475a;
+            text-align: left;
+        }
+        th {
+            background: #343746;
+            color: #8be9fd;
+        }
+        tr:nth-child(even) {
+            background: #282a36;
+        }
+        tr:nth-child(odd) {
+            background: #23272e;
+        }
+        #chartContainer {
+            height: 400px;
+            margin-top: 40px;
+            background: #23272e;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Panel</h1>
+        <div class="timer-controls">
+            <button id="startTimerBtn">Start</button>
+            <button id="pauseTimerBtn">Pause</button>
+            <button id="resetTimerBtn">Reset</button>
+        </div>
+        <div id="timerDisplay">01:00:00</div>
+        <div id="leaderboard">
+            <h2>Leaderboard</h2>
+            <table id="leaderboardTable">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Team</th>
+                        <th>Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Leaderboard rows will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+        <div id="chartContainer"></div>
+    </div>
+
+    <script>
+    // Set your actual admin password here
+    const ADMIN_PASSWORD = "admin123";
+
+    // WebSocket connection for admin
+    let ws;
+    let timeLeft = 60 * 60 * 1000; // 1 hour in ms
+    let isTimerRunning = false;
+    let timerInterval = null;
+
+    function connectWebSocket() {
+        ws = new WebSocket('wss://ctf-backend-rose.vercel.app');
+        
+        ws.onopen = () => {
+            console.log('Admin WebSocket connected');
+        };
+        
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.type === 'timer') {
+                timeLeft = data.data.timeLeft;
+                isTimerRunning = data.data.isRunning;
+                updateTimerDisplay();
+                handleTimerInterval();
+            }
+        };
+        
+        ws.onclose = () => {
+            console.log('WebSocket disconnected. Reconnecting...');
+            setTimeout(connectWebSocket, 3000);
+        };
+        
+        ws.onerror = (error) => {
+            console.error('WebSocket error:', error);
+            ws.close();
+        };
+    }
+
+    function updateTimerDisplay() {
+        const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+        document.getElementById('timerDisplay').textContent =
+            (hours < 10 ? '0' : '') + hours + ':' +
+            (minutes < 10 ? '0' : '') + minutes + ':' +
+            (seconds < 10 ? '0' : '') + seconds;
+    }
+
+    function handleTimerInterval() {
+        if (isTimerRunning && !timerInterval) {
+            timerInterval = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft -= 1000;
+                    updateTimerDisplay();
+                } else {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+            }, 1000);
+        } else if (!isTimerRunning && timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+    }
+
+    // Timer control functions
+    function startTimer() {
+        fetch('https://ctf-backend-rose.vercel.app/api/timer/start', { method: 'POST' })
+            .then(() => {
+                isTimerRunning = true;
+                handleTimerInterval();
+            });
+    }
+
+    function pauseTimer() {
+        fetch('https://ctf-backend-rose.vercel.app/api/timer/pause', { method: 'POST' })
+            .then(() => {
+                isTimerRunning = false;
+                handleTimerInterval();
+            });
+    }
+
+    function resetTimer() {
+        fetch('https://ctf-backend-rose.vercel.app/api/timer/reset', { method: 'POST' })
+            .then(() => {
+                timeLeft = 60 * 60 * 1000;
+                isTimerRunning = false;
+                updateTimerDisplay();
+                handleTimerInterval();
+            });
+    }
+
+    // Leaderboard polling
+    function pollLeaderboard() {
+        fetch('https://ctf-backend-rose.vercel.app/api/leaderboard')
+            .then(response => response.json())
+            .then(data => {
+                updateLeaderboardTable(data.leaderboard || []);
+                updateChart(data.leaderboard || []);
+            })
+            .catch(() => {
+                updateLeaderboardTable([]);
+                updateChart([]);
+            })
+            .finally(() => {
+                setTimeout(pollLeaderboard, 5000);
+            });
+    }
+
+    function updateLeaderboardTable(leaderboard) {
+        const tbody = document.querySelector('#leaderboardTable tbody');
+        tbody.innerHTML = '';
+        leaderboard.forEach((team, idx) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${idx + 1}</td>
+                <td>${team.teamName}</td>
+                <td>${team.score}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // Highcharts
+    function updateChart(leaderboard) {
+        Highcharts.chart('chartContainer', {
+            chart: { type: 'column', backgroundColor: '#23272e' },
+            title: { text: 'Team Scores', style: { color: '#8be9fd' } },
+            xAxis: {
+                categories: leaderboard.map(team => team.teamName),
+                title: { text: 'Team', style: { color: '#8be9fd' } },
+                labels: { style: { color: '#f8f8f2' } }
+            },
+            yAxis: {
+                min: 0,
+                title: { text: 'Score', style: { color: '#8be9fd' } },
+                labels: { style: { color: '#f8f8f2' } }
+            },
+            legend: { itemStyle: { color: '#f8f8f2' } },
+            series: [{
+                name: 'Score',
+                data: leaderboard.map(team => team.score),
+                color: '#61dafb'
+            }],
+            credits: { enabled: false }
+        });
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        // Admin authentication
+        const password = prompt("Please enter admin password:");
+        if (password !== ADMIN_PASSWORD) {
+            alert("Incorrect admin password");
+            window.location.href = "index.html";
+            return;
+        }
+
+        connectWebSocket();
+
+        // Highcharts global options
+        Highcharts.setOptions({
+            tooltip: {
+                backgroundColor: '#343746',
+                borderColor: '#61dafb',
+                style: {
+                    color: '#f8f8f2',
+                    fontSize: '13px'
+                }
+            },
+            chart: {
+                backgroundColor: '#23272e'
+            },
+            colors: ['#61dafb', '#ffb86c', '#50fa7b', '#bd93f9', '#ff5555']
+        });
+
+        // Get initial timer state
+        fetch('https://ctf-backend-rose.vercel.app/api/timer')
+            .then(response => response.json())
+            .then(data => {
+                timeLeft = data.timeLeft;
+                isTimerRunning = data.isRunning;
+                updateTimerDisplay();
+                handleTimerInterval();
+            });
+
+        // Initialize leaderboard polling
+        pollLeaderboard();
+
+        // Set up button event listeners
+        document.getElementById('startTimerBtn').addEventListener('click', startTimer);
+        document.getElementById('pauseTimerBtn').addEventListener('click', pauseTimer);
+        document.getElementById('resetTimerBtn').addEventListener('click', resetTimer);
+    });
+    </script>
+</body>
+</html>
