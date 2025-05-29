@@ -69,6 +69,18 @@
             background-color: white !important;
             fill: white !important;
         }
+        /* Tooltip styling */
+        .highcharts-tooltip span {
+            background-color: white !important;
+            color: #333 !important;
+            border: 1px solid #ddd !important;
+            border-radius: 4px !important;
+            padding: 8px !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+        }
+        .highcharts-tooltip text {
+            fill: #333 !important;
+        }
     </style>
 </head>
 <body>
@@ -148,6 +160,17 @@
                 window.location.href = 'register.html';
             } else {
                 pollLeaderboard();
+            }
+        });
+
+        // Update the Highcharts global options at the beginning of your script
+        Highcharts.setOptions({
+            tooltip: {
+                backgroundColor: 'white', // Force white background
+                style: {
+                    color: '#333', // Dark text for contrast
+                    fontSize: '12px'
+                }
             }
         });
 
@@ -284,9 +307,14 @@
                 },
                 legend: { enabled: false },
                 tooltip: {
+                    backgroundColor: 'white',
                     formatter: function() {
                         const team = teams.find(t => t.name === this.key);
-                        return `<b>${this.key}</b><br/>Points: ${this.y}<br/>Flags: ${team.flags ? team.flags.length : 0}`;
+                        return `<div style="color: #333">
+                            <b>${this.key}</b><br/>
+                            Points: ${this.y}<br/>
+                            Flags: ${team.flags ? team.flags.length : 0}
+                        </div>`;
                     }
                 },
                 plotOptions: {
@@ -342,7 +370,11 @@
                     }
                 },
                 tooltip: {
-                    pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+                    backgroundColor: 'white', // Explicit white background
+                    pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>',
+                    style: {
+                        color: '#333'
+                    }
                 },
                 plotOptions: {
                     pie: {
@@ -397,7 +429,12 @@
                     }
                 },
                 xAxis: {
-                    categories: ['Easy', 'Medium', 'Hard']
+                categories: ['Easy', 'Medium', 'Hard'],
+                labels: {
+                    style: {
+                        color: '#333' // Ensure dark text for axis labels
+                        }
+                    }
                 },
                 yAxis: {
                     min: 0,
@@ -417,8 +454,12 @@
                     layout: 'vertical'
                 },
                 tooltip: {
-                    headerFormat: '<b>{point.x}</b><br/>',
-                    pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}'
+                    backgroundColor: 'white',
+                    headerFormat: '<b>Difficulty: {point.key}</b><br/>', // Use 'key' instead of 'x'
+                    pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}',
+                    style: {
+                        color: '#333'
+                    }
                 },
                 plotOptions: {
                     column: {
