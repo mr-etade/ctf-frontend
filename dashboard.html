@@ -6,7 +6,7 @@
     <title>Python Control Flow CTF - Dashboard</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="js/script.js"></script>
 </head>
 <body>
@@ -39,11 +39,11 @@
         <section>
             <div>
                 <h3>Progress Stats</h3>
-                <canvas id="progress-chart"></canvas>
+                <div id="progressChart" style="height: 300px;"></div>
             </div>
             <div>
                 <h3>Difficulty Breakdown</h3>
-                <canvas id="difficulty-chart"></canvas>
+                <div id="difficultyChart" style="height: 300px;"></div>
             </div>
         </section>
     </main>
