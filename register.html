@@ -3,179 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CTF Registration</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Custom CSS -->
-    <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Courier New', monospace;
-        }
-        .ctf-header {
-            background-color: #212529;
-            color: #ffffff;
-            padding: 2rem 0;
-            margin-bottom: 2rem;
-            border-bottom: 5px solid #0d6efd;
-        }
-        .registration-box {
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 2rem;
-            margin: 2rem auto;
-            max-width: 600px;
-        }
-        .btn-register {
-            background-color: #0d6efd;
-            color: white;
-            font-weight: bold;
-            padding: 0.5rem 2rem;
-        }
-        .btn-register:hover {
-            background-color: #0b5ed7;
-            color: white;
-        }
-        .footer {
-            background-color: #212529;
-            color: white;
-            padding: 1rem 0;
-            margin-top: 2rem;
-        }
-        .back-to-home-btn {
-            background-color: #0d6efd;
-            color: white;
-            border: none;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            cursor: pointer; 
-        }
-    </style>
+    <title>Python Control Flow CTF - Submit Flag</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/script.js"></script>
 </head>
 <body>
-    <!-- Header -->
-    <header class="ctf-header text-center">
-        <div class="container">
-            <h1>Python Control Flow CTF</h1>
-            <p class="lead">Team Registration</p>
-        </div>
+    <header>
+        <h1>Python Control Flow CTF</h1>
+        <h2>Flag Submission</h2>
+        <p>Team: <span class="team-name">Guest</span></p>
     </header>
-
-    <!-- Main Content -->
-    <div class="container">
-        <div class="registration-box">
-            <h2 class="text-center mb-4">Register Your Team</h2>
-            
-            <form id="registrationForm">
-                <div class="mb-3">
-                    <label for="teamName" class="form-label">Team Name</label>
-                    <input type="text" class="form-control" id="teamName" required>
-                    <div class="form-text">Choose a unique name for your team</div>
-                </div>
-
-                <div class="mb-3">
-                    <label for="teamPassword" class="form-label">Team Password</label>
-                    <input type="password" class="form-control" id="teamPassword" required>
-                    <div class="form-text">Choose a secure password</div>
-                </div>
-
-                <div class="d-grid gap-2">
-                    <button type="submit" class="btn btn-register">Register</button>
-                </div>
+    <main>
+        <section>
+            <h2>Submit Your Flag</h2>
+            <form id="flag-form">
+                <label for="flag-input">Flag</label>
+                <input type="text" id="flag-input" placeholder="Enter the flag you've captured (case-sensitive)" required>
+                <button type="submit">Submit Flag</button>
             </form>
-
-            <div id="successMessage" class="alert alert-success mt-3" style="display: none;">
-                <h4>Registration Successful!</h4>
-                <p>Your team <strong><span id="displayTeamName"></span></strong> is now registered.</p>
-                <p>You can now participate in the CTF challenge.</p>
-                <a href="index.html" class="btn btn-outline-success">Back to Home</a>
+            <div>
+                <h3>Flag Format:</h3>
+                <p>All flags follow this pattern: CTF{s0m3_t3xt_h3r3}</p>
+                <ul>
+                    <li>Starts with CTF{</li>
+                    <li>Ends with }</li>
+                    <li>Contains alphanumeric characters and underscores</li>
+                </ul>
             </div>
-        </div>
-    </div>
-
-    <!-- Add this before the footer section -->
-    <div class="container">
-        <a href="index.html" class="back-to-home-btn">← Back to Home</a>
-    </div>
-
-    <!-- Footer -->
-    <footer class="footer text-center">
-        <div class="container">
-            <p>CMN115/CBS105 Introduction to Programming 2025 | Prepared by Mr. Eremas Tade</p>
-        </div>
+        </section>
+        <section id="flag-success" style="display: none;">
+            <p>Flag submitted successfully!</p>
+        </section>
+        <section id="flag-error" style="display: none;">
+            <p>Invalid flag! Try again.</p>
+        </section>
+    </main>
+    <a href="index.html">← Back to Home</a>
+    <footer>
+        <p>CMN115/CBS105 Introduction to Programming 2025 | Prepared by Mr. Eremas Tade</p>
     </footer>
-
-    <!-- Bootstrap JS + Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Registration Script -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-        if (localStorage.getItem('ctfTeamName')) {
-            window.location.href = 'index.html';
-            }
-        });
-
-        document.getElementById('registrationForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const teamName = document.getElementById('teamName').value.trim();
-        const teamPassword = document.getElementById('teamPassword').value;
-        
-        if (teamName) {
-            try {
-            const response = await fetch('https://ctf-backend-rose.vercel.app/api/teams', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ 
-                name: teamName,
-                password: teamPassword 
-            })
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Registration failed');
-            }
-
-            const teamData = await response.json();
-            
-            // Hide form
-            document.getElementById('registrationForm').style.display = 'none';
-            
-            // Show success message
-            document.getElementById('displayTeamName').textContent = teamData.name;
-            document.getElementById('successMessage').style.display = 'block';
-            
-            // Store team name in localStorage
-            localStorage.setItem('ctfTeamName', teamData.name);
-            } catch (err) {
-            console.error('API Error:', err);
-            alert(`Error: ${err.message}`);
-            }
-        }
-        });
-    </script>
-    <script>
-    // Check if team is registered
-    document.addEventListener('DOMContentLoaded', function() {
-        const teamName = localStorage.getItem('ctfTeamName');
-        if (teamName) {
-            document.getElementById('teamDisplay').style.display = 'block';
-            document.getElementById('teamNameDisplay').textContent = teamName;
-            
-            // Hide register link if on index.html
-            if (window.location.pathname.includes('index.html')) {
-                const registerLink = document.querySelector('a[href="register.html"]');
-                if (registerLink) {
-                    registerLink.style.display = 'none';
-                }
-            }
-        }
-    });
-    </script>
 </body>
 </html>
