@@ -2,364 +2,48 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Panel</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Highcharts CSS -->
-    <link href="https://code.highcharts.com/css/highcharts.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Courier New', monospace;
-        }
-        .ctf-header {
-            background-color: #212529;
-            color: #ffffff;
-            padding: 2rem 0;
-            margin-bottom: 2rem;
-            border-bottom: 5px solid #0d6efd;
-        }
-        .dashboard-container {
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 2rem;
-            margin-bottom: 2rem;
-        }
-        .chart-container {
-            height: 400px;
-            margin-bottom: 2rem;
-        }
-        .timer-display {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #dc3545;
-            background-color: #f8f9fa;
-            padding: 1rem;
-            border-radius: 10px;
-            text-align: center;
-            margin: 1rem 0;
-        }
-        .btn-admin {
-            background-color: #0d6efd;
-            color: white;
-            font-weight: bold;
-            margin: 0.5rem;
-        }
-        .btn-admin:hover {
-            background-color: #0b5ed7;
-            color: white;
-        }
-        .footer {
-            background-color: #212529;
-            color: white;
-            padding: 1rem 0;
-            margin-top: 2rem;
-        }
-        /* Force light mode for Highcharts elements */
-        .highcharts-container,
-        .highcharts-root,
-        .highcharts-background,
-        .highcharts-tooltip,
-        .highcharts-tooltip-box {
-            background-color: white !important;
-            color: #333 !important;
-            fill: white !important;
-        }
-        /* Specific tooltip styling */
-        .highcharts-tooltip span {
-            background-color: white !important;
-            color: #333 !important;
-            border: 1px solid #ddd !important;
-            border-radius: 4px !important;
-            padding: 8px !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
-        }
-        .highcharts-tooltip text {
-            fill: #333 !important;
-        }
-    </style>
-    <!-- Highcharts CDN -->
-    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <title>Python Control Flow CTF - Admin</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/script.js"></script>
 </head>
 <body>
-    <!-- Header -->
-    <header class="ctf-header text-center">
-        <div class="container">
-            <h1>Python Control Flow CTF</h1>
-            <p class="lead">Admin Panel</p>
-        </div>
+    <header>
+        <h1>Python Control Flow CTF</h1>
+        <h2>Admin Panel</h2>
     </header>
-
-    <!-- Main Content -->
-    <div class="container">
-        <div class="dashboard-container">
+    <main>
+        <section>
             <h2>Timer Controls</h2>
-            <div class="d-flex justify-content-center gap-3 mb-4">
-                <button id="startTimerBtn" class="btn btn-admin">Start</button>
-                <button id="pauseTimerBtn" class="btn btn-admin">Pause</button>
-                <button id="resetTimerBtn" class="btn btn-admin">Reset</button>
+            <div>
+                <button id="start-timer">Start</button>
+                <button id="pause-timer">Pause</button>
+                <button id="reset-timer">Reset</button>
             </div>
-            <div id="timerDisplay" class="timer-display">01:00:00</div>
-        </div>
-
-        <div class="dashboard-container">
+            <p id="timer">01:00:00</p>
+        </section>
+        <section>
             <h2>Leaderboard</h2>
-            <div class="table-responsive">
-                <table id="leaderboardTable" class="table table-striped">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Rank</th>
-                            <th>Team</th>
-                            <th>Score</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Leaderboard rows will be inserted here -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="dashboard-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Team</th>
+                        <th>Score</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body"></tbody>
+            </table>
+        </section>
+        <section>
             <h2>Team Scores Chart</h2>
-            <div id="chartContainer" class="chart-container"></div>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <footer class="footer text-center">
-        <div class="container">
-            <p>CMN115/CBS105 Introduction to Programming 2025 | Prepared by Mr. Eremas Tade</p>
-        </div>
+            <canvas id="scores-chart"></canvas>
+        </section>
+    </main>
+    <footer>
+        <p>CMN115/CBS105 Introduction to Programming 2025 | Prepared by Mr. Eremas Tade</p>
     </footer>
-
-    <!-- Bootstrap JS + Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-
-    <script>
-    // Set your actual admin password here
-    const ADMIN_PASSWORD = "admin123";
-
-    let timeLeft = 60 * 60 * 1000; // 1 hour in ms
-    let isTimerRunning = false;
-    let timerInterval = null;
-    let socket;
-
-    function updateTimerDisplay() {
-        const hours = Math.floor(timeLeft / (1000 * 60 * 60));
-        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-        document.getElementById('timerDisplay').textContent =
-            (hours < 10 ? '0' : '') + hours + ':' +
-            (minutes < 10 ? '0' : '') + minutes + ':' +
-            (seconds < 10 ? '0' : '') + seconds;
-    }
-
-    function handleTimerInterval() {
-        if (isTimerRunning && !timerInterval) {
-            timerInterval = setInterval(() => {
-                if (timeLeft > 0) {
-                    timeLeft -= 1000;
-                    updateTimerDisplay();
-                } else {
-                    clearInterval(timerInterval);
-                    timerInterval = null;
-                }
-            }, 1000);
-        } else if (!isTimerRunning && timerInterval) {
-            clearInterval(timerInterval);
-            timerInterval = null;
-        }
-    }
-
-    // Timer control functions
-    function startTimer() {
-        fetch('https://ctf-backend-rose.vercel.app/api/timer/start', { 
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ password: ADMIN_PASSWORD })
-        });
-    }
-
-    function pauseTimer() {
-        fetch('https://ctf-backend-rose.vercel.app/api/timer/pause', { 
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ password: ADMIN_PASSWORD })
-        });
-    }
-
-    function resetTimer() {
-        fetch('https://ctf-backend-rose.vercel.app/api/timer/reset', { 
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ password: ADMIN_PASSWORD })
-        });
-    }
-
-    // Leaderboard update
-    function updateLeaderboardTable(teams) {
-        const tbody = document.querySelector('#leaderboardTable tbody');
-        tbody.innerHTML = '';
-        
-        if (!teams || teams.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="3" class="text-center">No teams registered yet</td></tr>';
-            return;
-        }
-
-        teams.forEach((team, idx) => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${idx + 1}</td>
-                <td>${team.name || team.teamName || 'Unknown'}</td>
-                <td>${team.score || 0}</td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-
-    // Highcharts
-    function updateChart(teams) {
-        if (!teams || teams.length === 0) {
-            document.getElementById('chartContainer').innerHTML = '<p class="text-center">No team data available</p>';
-            return;
-        }
-
-        Highcharts.chart('chartContainer', {
-            chart: { 
-                type: 'bar',
-                backgroundColor: '#ffffff'
-            },
-            title: { 
-                text: 'Team Scores',
-                style: { 
-                    color: '#333',
-                    fontSize: '18px'
-                }
-            },
-            xAxis: {
-                categories: teams.map(team => team.name || team.teamName),
-                title: { 
-                    text: 'Team',
-                    style: { 
-                        color: '#333'
-                    } 
-                },
-                labels: { 
-                    style: { 
-                        color: '#333' 
-                    } 
-                }
-            },
-            yAxis: {
-                min: 0,
-                title: { 
-                    text: 'Score',
-                    style: { 
-                        color: '#333' 
-                    } 
-                },
-                labels: { 
-                    style: { 
-                        color: '#333' 
-                    } 
-                }
-            },
-            legend: { 
-                itemStyle: { 
-                    color: '#333' 
-                } 
-            },
-            tooltip: {
-                backgroundColor: '#ffffff',
-                borderColor: '#cccccc',
-                style: {
-                    color: '#333333'
-                }
-            },
-            series: [{
-                name: 'Score',
-                data: teams.map(team => team.score || 0),
-                color: '#0d6efd'
-            }],
-            credits: { enabled: false }
-        });
-    }
-
-    // Initialize
-    document.addEventListener('DOMContentLoaded', function() {
-        // Admin authentication
-        const password = prompt("Please enter admin password:");
-        if (password !== ADMIN_PASSWORD) {
-            alert("Incorrect admin password");
-            window.location.href = "index.html";
-            return;
-        }
-
-        // Highcharts global options
-        Highcharts.setOptions({
-            tooltip: {
-                backgroundColor: '#ffffff',
-                borderColor: '#cccccc',
-                style: {
-                    color: '#333333',
-                    fontSize: '13px'
-                }
-            },
-            chart: {
-                backgroundColor: '#ffffff'
-            },
-            colors: ['#0d6efd', '#6c757d', '#28a745', '#ffc107', '#dc3545']
-        });
-
-        // Initialize Socket.io connection
-        socket = io('https://ctf-backend-rose.vercel.app', {
-            withCredentials: true,
-            transports: ['websocket']
-        });
-
-        socket.on('connect', () => {
-            console.log('Connected to WebSocket');
-        });
-
-        socket.on('disconnect', () => {
-            console.log('Disconnected from WebSocket');
-        });
-
-        socket.on('timer', (data) => {
-            timeLeft = data.timeLeft;
-            isTimerRunning = data.isRunning;
-            updateTimerDisplay();
-            handleTimerInterval();
-        });
-
-        socket.on('leaderboard', (teams) => {
-            updateLeaderboardTable(teams);
-            updateChart(teams);
-        });
-
-        // Set up button event listeners
-        document.getElementById('startTimerBtn').addEventListener('click', startTimer);
-        document.getElementById('pauseTimerBtn').addEventListener('click', pauseTimer);
-        document.getElementById('resetTimerBtn').addEventListener('click', resetTimer);
-
-        // Initial data fetch
-        fetch('https://ctf-backend-rose.vercel.app/api/teams')
-            .then(response => response.json())
-            .then(teams => {
-                updateLeaderboardTable(teams);
-                updateChart(teams);
-            });
-    });
-    </script>
 </body>
 </html>
