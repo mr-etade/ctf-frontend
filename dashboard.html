@@ -62,14 +62,17 @@
             border-radius: 4px;
             cursor: pointer; 
         }
-        /* Add this to your style section */
-        .highcharts-container, 
-        .highcharts-root, 
-        .highcharts-background {
+        /* Force light mode for Highcharts elements */
+        .highcharts-container,
+        .highcharts-root,
+        .highcharts-background,
+        .highcharts-tooltip,
+        .highcharts-tooltip-box {
             background-color: white !important;
+            color: #333 !important;
             fill: white !important;
         }
-        /* Tooltip styling */
+        /* Specific tooltip styling */
         .highcharts-tooltip span {
             background-color: white !important;
             color: #333 !important;
@@ -178,27 +181,22 @@
             // Set Highcharts global options
             Highcharts.setOptions({
                 tooltip: {
-                    backgroundColor: 'white',
+                    backgroundColor: '#ffffff', // Force white background
+                    borderColor: '#cccccc', // Light gray border
                     style: {
-                        color: '#333',
+                        color: '#333333', // Dark text for contrast
                         fontSize: '12px'
                     }
-                }
+                },
+                // Also force light mode for other chart elements
+                chart: {
+                    backgroundColor: '#ffffff'
+                },
+                colors: ['#7cb5ec', '#434348', '#90ed7d', '#f7a35c', '#8085e9'] // Default Highcharts colors
             });
 
             // Start polling
             pollLeaderboard();
-        });
-
-        // Update the Highcharts global options at the beginning of your script
-        Highcharts.setOptions({
-            tooltip: {
-                backgroundColor: 'white', // Force white background
-                style: {
-                    color: '#333', // Dark text for contrast
-                    fontSize: '12px'
-                }
-            }
         });
 
         // Store chart references globally
@@ -320,7 +318,10 @@
                 chart: { 
                     type: 'bar',
                     height: 400 + (teams.length * 20),
-                    backgroundColor: 'white' // Set white background
+                    backgroundColor: '#ffffff', // Force white background
+                    style: {
+                        color: '#333333' // Force dark text
+                    }
                 },
                 title: { 
                     text: 'Team Leaderboard',
@@ -334,7 +335,11 @@
                 },
                 legend: { enabled: false },
                 tooltip: {
-                    backgroundColor: 'white',
+                    backgroundColor: '#ffffff',
+                    borderColor: '#cccccc',
+                    style: {
+                        color: '#333333'
+                    },
                     formatter: function() {
                         const team = teams.find(t => t.name === this.key);
                         return `<div style="color: #333">
@@ -375,7 +380,10 @@
             window.progressChart = Highcharts.chart('progressChart', {
                 chart: { 
                     type: 'pie',
-                    backgroundColor: 'white' // Set white background
+                    backgroundColor: '#ffffff', // Force white background
+                    style: {
+                        color: '#333333' // Force dark text
+                    }
                 },
                 title: {
                     text: '', // Remove top title
@@ -397,11 +405,12 @@
                     }
                 },
                 tooltip: {
-                    backgroundColor: 'white', // Explicit white background
-                    pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>',
+                    backgroundColor: '#ffffff',
+                    borderColor: '#cccccc',
                     style: {
-                        color: '#333'
-                    }
+                        color: '#333333'
+                    },
+                    pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
                 },
                 plotOptions: {
                     pie: {
@@ -434,7 +443,10 @@
             window.difficultyChart = Highcharts.chart('difficultyChart', {
                 chart: { 
                     type: 'column',
-                    backgroundColor: 'white' // Set white background
+                    backgroundColor: '#ffffff', // Force white background
+                    style: {
+                        color: '#333333' // Force dark text
+                    }
                 },
                 title: {
                     text: '', // Remove top title
@@ -481,12 +493,13 @@
                     layout: 'vertical'
                 },
                 tooltip: {
-                    backgroundColor: 'white',
-                    headerFormat: '<b>Difficulty: {point.key}</b><br/>', // Use 'key' instead of 'x'
-                    pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}',
+                    backgroundColor: '#ffffff',
+                    borderColor: '#cccccc',
                     style: {
-                        color: '#333'
-                    }
+                        color: '#333333'
+                    },
+                    headerFormat: '<b>Difficulty: {point.key}</b><br/>', // Use 'key' instead of 'x'
+                    pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}'
                 },
                 plotOptions: {
                     column: {
