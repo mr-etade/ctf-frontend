@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Python Control Flow CTF - Submit Flag</title>
+    <title>Python Control Flow CTF - Register</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -12,32 +12,24 @@
 <body>
     <header>
         <h1>Python Control Flow CTF</h1>
-        <h2>Flag Submission</h2>
-        <p>Team: <span class="team-name">Guest</span></p>
+        <h2>Team Registration</h2>
     </header>
     <main>
         <section>
-            <h2>Submit Your Flag</h2>
-            <form id="flag-form">
-                <label for="flag-input">Flag</label>
-                <input type="text" id="flag-input" placeholder="Enter the flag you've captured (case-sensitive)" required>
-                <button type="submit">Submit Flag</button>
+            <h2>Register Your Team</h2>
+            <form id="register-form">
+                <label for="team-name">Team Name</label>
+                <input type="text" id="team-name" placeholder="Choose a unique name for your team" required>
+                <label for="team-password">Team Password</label>
+                <input type="password" id="team-password" placeholder="Choose a secure password" required>
+                <button type="submit">Register</button>
             </form>
-            <div>
-                <h3>Flag Format:</h3>
-                <p>All flags follow this pattern: CTF{s0m3_t3xt_h3r3}</p>
-                <ul>
-                    <li>Starts with CTF{</li>
-                    <li>Ends with }</li>
-                    <li>Contains alphanumeric characters and underscores</li>
-                </ul>
+            <div id="success-message" style="display: none;">
+                <p>Registration Successful!</p>
+                <p>Your team <span class="team-name">Guest</span> is now registered.</p>
+                <p>You can now participate in the CTF challenge.</p>
+                <a href="index.html">Back to Home</a>
             </div>
-        </section>
-        <section id="flag-success" style="display: none;">
-            <p>Flag submitted successfully!</p>
-        </section>
-        <section id="flag-error" style="display: none;">
-            <p>Invalid flag! Try again.</p>
         </section>
     </main>
     <a href="index.html">← Back to Home</a>
