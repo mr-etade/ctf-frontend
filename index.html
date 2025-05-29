@@ -4,196 +4,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Python Control Flow CTF</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Custom CSS -->
-    <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Courier New', monospace;
-        }
-        .ctf-header {
-            background-color: #212529;
-            color: #ffffff;
-            padding: 2rem 0;
-            margin-bottom: 2rem;
-            border-bottom: 5px solid #0d6efd;
-        }
-        .countdown {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #dc3545;
-            background-color: #f8f9fa;
-            padding: 1rem;
-            border-radius: 10px;
-            text-align: center;
-            margin: 1rem 0;
-        }
-        .card {
-            margin-bottom: 1.5rem;
-            border: none;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .card-header {
-            background-color: #0d6efd;
-            color: white;
-            font-weight: bold;
-        }
-        .btn-ctf {
-            background-color: #0d6efd;
-            color: white;
-            font-weight: bold;
-            margin: 0.5rem;
-        }
-        .btn-ctf:hover {
-            background-color: #0b5ed7;
-            color: white;
-        }
-        .footer {
-            background-color: #212529;
-            color: white;
-            padding: 1rem 0;
-            margin-top: 2rem;
-        }
-    </style>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/script.js"></script>
 </head>
 <body>
-    <!-- Header -->
-    <header class="ctf-header text-center">
-        <div class="container">
-            <h1>Python Control Flow CTF</h1>
-            <p class="lead">A 60-minute Capture The Flag event on Conditional and Iterative Statements</p>
-            <div id="teamDisplay" class="mt-2" style="display: none;">
-                <span class="badge bg-primary">Team: <span id="teamNameDisplay"></span></span>
-            </div>
-        </div>
+    <header>
+        <h1>Python Control Flow CTF</h1>
+        <p>A 60-minute Capture The Flag event on Conditional and Iterative Statements</p>
+        <p>Team: <span class="team-name">Guest</span></p>
     </header>
-
-    <!-- Main Content -->
-    <div class="container">
-        <!-- Countdown Timer -->
-        <div class="countdown" id="countdown">
-            60:00
-        </div>
-
-        <!-- Event Info Cards -->
-        <div class="row">
-            <div class="col-md-6">
+    <main>
+        <section>
+            <h2 id="timer">60:00</h2>
+        </section>
+        <section>
+            <div class="grid">
                 <div class="card">
-                    <div class="card-header">
-                        About the CTF
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">Test Your Python Skills</h5>
-                        <p class="card-text">
-                            This CTF focuses on Python's conditional statements (if/else/elif) and 
-                            iterative statements (for/while loops). Solve challenges to capture flags 
-                            and climb the leaderboard!
-                        </p>
-                        <ul>
-                            <li>30 flags to capture (10 Easy, 15 Medium, 5 Hard)</li>
-                            <li>60-minute time limit</li>
-                            <li>16 teams competing</li>
-                        </ul>
-                    </div>
+                    <h3>About the CTF</h3>
+                    <h4>Test Your Python Skills</h4>
+                    <p>
+                        This CTF focuses on Python's conditional statements (if/else/elif) and 
+                        iterative statements (for/while loops). Solve challenges to capture flags 
+                        and climb the leaderboard!
+                    </p>
+                    <ul>
+                        <li>30 flags to capture (10 Easy, 15 Medium, 5 Hard)</li>
+                        <li>60-minute time limit</li>
+                        <li>16 teams competing</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="register.html">Team Registration</a></li>
+                        <li><a href="submit.html">Submit Flag</a></li>
+                        <li><a href="dashboard.html">Live Dashboard</a></li>
+                    </ul>
+                    <h3>Rules</h3>
+                    <ul>
+                        <li>No sharing flags between teams</li>
+                        <li>All code must be your own work</li>
+                        <li>Flags follow format: CTF{s0m3_t3xt}</li>
+                        <li>Most flags in 60 minutes wins!</li>
+                    </ul>
                 </div>
             </div>
-
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        Quick Links
-                    </div>
-                    <div class="card-body text-center">
-                        <a href="register.html" class="btn btn-ctf btn-lg">Team Registration</a>
-                        <a href="submit.html" class="btn btn-ctf btn-lg">Submit Flag</a>
-                        <a href="dashboard.html" class="btn btn-ctf btn-lg">Live Dashboard</a>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        Rules
-                    </div>
-                    <div class="card-body">
-                        <ol>
-                            <li>No sharing flags between teams</li>
-                            <li>All code must be your own work</li>
-                            <li>Flags follow format: <code>CTF{s0m3_t3xt}</code></li>
-                            <li>Most flags in 60 minutes wins!</li>
-                        </ol>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <footer class="footer text-center">
-        <div class="container">
-            <p>CMN115/CBS105 Introduction to Programming 2025 | Prepared by Mr. Eremas Tade</p>
-        </div>
+        </section>
+    </main>
+    <footer>
+        <p>CMN115/CBS105 Introduction to Programming 2025 | Prepared by Mr. Eremas Tade</p>
     </footer>
-
-    <!-- Bootstrap JS + Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-    
-    <!-- Countdown Timer Script -->
-    <script>
-        let timeLeft = 60 * 60 * 1000; // Default 60 minutes
-        let socket;
-
-        // Initialize timer display
-        function updateTimerDisplay() {
-            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-            
-            document.getElementById("countdown").innerHTML = 
-                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            
-            if (timeLeft <= 0) {
-                document.getElementById("countdown").innerHTML = "TIME'S UP!";
-                document.getElementById("countdown").style.backgroundColor = "#dc3545";
-                document.getElementById("countdown").style.color = "white";
-            }
-        }
-        
-        // Initial connection
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize Socket.io connection
-            socket = io('https://ctf-backend-rose.vercel.app', {
-                withCredentials: true,
-                transports: ['websocket']
-            });
-
-            socket.on('connect', () => {
-                console.log('Connected to WebSocket');
-            });
-
-            socket.on('disconnect', () => {
-                console.log('Disconnected from WebSocket');
-            });
-
-            socket.on('timer', (data) => {
-                timeLeft = data.timeLeft;
-                updateTimerDisplay();
-            });
-
-            // Check if team is registered
-            const teamName = localStorage.getItem('ctfTeamName');
-            if (teamName) {
-                document.getElementById('teamDisplay').style.display = 'block';
-                document.getElementById('teamNameDisplay').textContent = teamName;
-                
-                if (window.location.pathname.includes('index.html')) {
-                    const registerLink = document.querySelector('a[href="register.html"]');
-                    if (registerLink) {
-                        registerLink.style.display = 'none';
-                    }
-                }
-            }
-        });
-    </script>
 </body>
 </html>
