@@ -154,44 +154,17 @@
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
     <script src="https://code.highcharts.com/modules/export-data.js"></script>
     <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     
     <!-- Dashboard Script -->
     <script>
-        // WebSocket connection for real-time updates
-        let ws;
-
-        function connectWebSocket() {
-            ws = new WebSocket('wss://ctf-backend-rose.vercel.app');
-            
-            ws.onopen = () => {
-                console.log('WebSocket connected for dashboard');
-            };
-            
-            ws.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                if (data.type === 'timer') {
-                    // Timer updates can be used if needed
-                    console.log('Timer update received:', data.data);
-                } else if (data.type === 'leaderboard') {
-                    updateDashboardData(data.data);
-                }
-            };
-            
-            ws.onclose = () => {
-                console.log('WebSocket disconnected. Reconnecting...');
-                setTimeout(connectWebSocket, 3000);
-            };
-            
-            ws.onerror = (error) => {
-                console.error('WebSocket error:', error);
-                ws.close();
-            };
-        }
+        // Store chart references globally
+        window.leaderboardChart = null;
+        window.progressChart = null;
+        window.difficultyChart = null;
+        let socket;
 
         document.addEventListener('DOMContentLoaded', function() {
-            
-            connectWebSocket();
-
             // Check if team is registered
             const teamName = localStorage.getItem('ctfTeamName');
             if (!teamName) {
@@ -215,42 +188,53 @@
             // Set Highcharts global options
             Highcharts.setOptions({
                 tooltip: {
-                    backgroundColor: '#ffffff', // Force white background
-                    borderColor: '#cccccc', // Light gray border
+                    backgroundColor: '#ffffff',
+                    borderColor: '#cccccc',
                     style: {
-                        color: '#333333', // Dark text for contrast
+                        color: '#333333',
                         fontSize: '12px'
                     }
                 },
-                // Also force light mode for other chart elements
                 chart: {
                     backgroundColor: '#ffffff'
                 },
-                colors: ['#7cb5ec', '#434348', '#90ed7d', '#f7a35c', '#8085e9'] // Default Highcharts colors
+                colors: ['#7cb5ec', '#434348', '#90ed7d', '#f7a35c', '#8085e9']
             });
 
-            // Start polling
-            pollLeaderboard();
-        });
+            // Initialize Socket.io connection
+            socket = io('https://ctf-backend-rose.vercel.app', {
+                withCredentials: true,
+                transports: ['websocket']
+            });
 
-        // Store chart references globally
-        window.leaderboardChart = null;
-        window.progressChart = null;
-        window.difficultyChart = null;
+            socket.on('connect', () => {
+                console.log('Connected to WebSocket');
+            });
 
-        // Polling function for live updates
-        function pollLeaderboard() {
+            socket.on('disconnect', () => {
+                console.log('Disconnected from WebSocket');
+            });
+
+            socket.on('leaderboard', (teams) => {
+                updateDashboardData(teams);
+            });
+
+            // Initial data fetch
             fetch('https://ctf-backend-rose.vercel.app/api/teams')
                 .then(response => response.json())
                 .then(teams => {
                     updateDashboardData(teams);
-                    setTimeout(pollLeaderboard, 5000); // Poll every 5 seconds
-                })
-                .catch(err => {
-                    console.error('Polling error:', err);
-                    setTimeout(pollLeaderboard, 10000); // Retry after 10 seconds on error
                 });
-        }
+
+            // Manual refresh button
+            document.getElementById('refreshBtn').addEventListener('click', function() {
+                fetch('https://ctf-backend-rose.vercel.app/api/teams')
+                    .then(response => response.json())
+                    .then(teams => {
+                        updateDashboardData(teams);
+                    });
+            });
+        });
 
         // Update all charts with new data
         function updateDashboardData(teams) {
@@ -352,9 +336,9 @@
                 chart: { 
                     type: 'bar',
                     height: 400 + (teams.length * 20),
-                    backgroundColor: '#ffffff', // Force white background
+                    backgroundColor: '#ffffff',
                     style: {
-                        color: '#333333' // Force dark text
+                        color: '#333333'
                     }
                 },
                 title: { 
@@ -414,9 +398,9 @@
             window.progressChart = Highcharts.chart('progressChart', {
                 chart: { 
                     type: 'pie',
-                    backgroundColor: '#ffffff', // Force white background
+                    backgroundColor: '#ffffff',
                     style: {
-                        color: '#333333' // Force dark text
+                        color: '#333333'
                     }
                 },
                 title: {
@@ -477,9 +461,9 @@
             window.difficultyChart = Highcharts.chart('difficultyChart', {
                 chart: { 
                     type: 'column',
-                    backgroundColor: '#ffffff', // Force white background
+                    backgroundColor: '#ffffff',
                     style: {
-                        color: '#333333' // Force dark text
+                        color: '#333333'
                     }
                 },
                 title: {
@@ -502,10 +486,10 @@
                     }
                 },
                 xAxis: {
-                categories: ['Easy', 'Medium', 'Hard'],
-                labels: {
-                    style: {
-                        color: '#333' // Ensure dark text for axis labels
+                    categories: ['Easy', 'Medium', 'Hard'],
+                    labels: {
+                        style: {
+                            color: '#333'
                         }
                     }
                 },
@@ -532,7 +516,7 @@
                     style: {
                         color: '#333333'
                     },
-                    headerFormat: '<b>Difficulty: {point.key}</b><br/>', // Use 'key' instead of 'x'
+                    headerFormat: '<b>Difficulty: {point.key}</b><br/>',
                     pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}'
                 },
                 plotOptions: {
@@ -562,33 +546,6 @@
                 }]
             });
         }
-
-        // Manual refresh button
-        document.getElementById('refreshBtn').addEventListener('click', function() {
-            fetch('https://ctf-backend-rose.vercel.app/api/teams')
-                .then(response => response.json())
-                .then(teams => {
-                    updateDashboardData(teams);
-                });
-        });
-    </script>
-    <script>
-    // Check if team is registered
-    document.addEventListener('DOMContentLoaded', function() {
-        const teamName = localStorage.getItem('ctfTeamName');
-        if (teamName) {
-            document.getElementById('teamDisplay').style.display = 'block';
-            document.getElementById('teamNameDisplay').textContent = teamName;
-            
-            // Hide register link if on index.html
-            if (window.location.pathname.includes('index.html')) {
-                const registerLink = document.querySelector('a[href="register.html"]');
-                if (registerLink) {
-                    registerLink.style.display = 'none';
-                }
-            }
-        }
-    });
     </script>
 </body>
 </html>
