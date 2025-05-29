@@ -62,6 +62,13 @@
             border-radius: 4px;
             cursor: pointer; 
         }
+        /* Add this to your style section */
+        .highcharts-container, 
+        .highcharts-root, 
+        .highcharts-background {
+            background-color: white !important;
+            fill: white !important;
+        }
     </style>
 </head>
 <body>
@@ -226,7 +233,11 @@
                     { name: 'Solved', y: progressData.solved, color: '#28a745' },
                     { name: 'Unsolved', y: progressData.unsolved, color: '#dc3545' }
                 ]);
-                window.progressChart.setTitle({ text: `Your Progress: ${currentTeamName}` });
+                window.progressChart.update({
+                    subtitle: {
+                        text: `Your Progress: ${currentTeamName}`
+                    }
+                });
             } else {
                 initProgressChart(progressData, currentTeamName);
             }
@@ -243,7 +254,11 @@
                     difficultyData.medium.total - difficultyData.medium.solved,
                     difficultyData.hard.total - difficultyData.hard.solved
                 ]);
-                window.difficultyChart.setTitle({ text: `Your Difficulty Breakdown: ${currentTeamName}` });
+                window.difficultyChart.update({
+                    subtitle: {
+                        text: `Your Difficulty Breakdown: ${currentTeamName}`
+                    }
+                });
             } else {
                 initDifficultyChart(difficultyData, currentTeamName);
             }
@@ -254,12 +269,13 @@
             window.leaderboardChart = Highcharts.chart('leaderboardChart', {
                 chart: { 
                     type: 'bar',
-                    height: 400 + (teams.length * 20) // Dynamic height based on number of teams
+                    height: 400 + (teams.length * 20),
+                    backgroundColor: 'white' // Set white background
                 },
-                title: { text: 'Team Leaderboard' },
-                xAxis: {
-                    categories: teams.map(team => team.name),
-                    title: { text: null }
+                title: { 
+                    text: 'Team Leaderboard',
+                    align: 'center',
+                    verticalAlign: 'top'
                 },
                 yAxis: {
                     min: 0,
@@ -302,8 +318,29 @@
         // Initialize progress chart
         function initProgressChart(data, teamName) {
             window.progressChart = Highcharts.chart('progressChart', {
-                chart: { type: 'pie' },
-                title: { text: `Your Progress: ${teamName}` },
+                chart: { 
+                    type: 'pie',
+                    backgroundColor: 'white' // Set white background
+                },
+                title: {
+                    text: '', // Remove top title
+                    floating: true,
+                    align: 'center',
+                    verticalAlign: 'middle',
+                    style: {
+                        fontSize: '16px'
+                    }
+                },
+                subtitle: {
+                    text: `Your Progress: ${teamName}`,
+                    align: 'center',
+                    verticalAlign: 'bottom',
+                    y: 30,
+                    style: {
+                        fontSize: '14px',
+                        fontWeight: 'bold'
+                    }
+                },
                 tooltip: {
                     pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
                 },
@@ -336,8 +373,29 @@
         // Initialize difficulty chart
         function initDifficultyChart(data, teamName) {
             window.difficultyChart = Highcharts.chart('difficultyChart', {
-                chart: { type: 'column' },
-                title: { text: `Your Difficulty Breakdown: ${teamName}` },
+                chart: { 
+                    type: 'column',
+                    backgroundColor: 'white' // Set white background
+                },
+                title: {
+                    text: '', // Remove top title
+                    floating: true,
+                    align: 'center',
+                    verticalAlign: 'middle',
+                    style: {
+                        fontSize: '16px'
+                    }
+                },
+                subtitle: {
+                    text: `Your Difficulty Breakdown: ${teamName}`,
+                    align: 'center',
+                    verticalAlign: 'bottom',
+                    y: 30,
+                    style: {
+                        fontSize: '14px',
+                        fontWeight: 'bold'
+                    }
+                },
                 xAxis: {
                     categories: ['Easy', 'Medium', 'Hard']
                 },
