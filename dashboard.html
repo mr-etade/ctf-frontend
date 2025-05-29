@@ -136,11 +136,11 @@
     <!-- Dashboard Script -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-        if (!localStorage.getItem('ctfTeamName')) {
-            alert('Please register your team first');
-            window.location.href = 'register.html';
-        } else {
-            pollLeaderboard();
+            if (!localStorage.getItem('ctfTeamName')) {
+                alert('Please register your team first');
+                window.location.href = 'register.html';
+            } else {
+                pollLeaderboard();
             }
         });
 
@@ -164,8 +164,6 @@
         }
 
         // Update all charts with new data
-        // In dashboard.html, replace the updateDashboardData function with this:
-
         function updateDashboardData(teams) {
             const currentTeamName = localStorage.getItem('ctfTeamName');
             const currentTeam = teams.find(team => team.name === currentTeamName);
@@ -251,7 +249,92 @@
             }
         }
 
-        function initDifficultyChart(data) {
+        // Initialize leaderboard chart
+        function initLeaderboardChart(teams) {
+            window.leaderboardChart = Highcharts.chart('leaderboardChart', {
+                chart: { 
+                    type: 'bar',
+                    height: 400 + (teams.length * 20) // Dynamic height based on number of teams
+                },
+                title: { text: 'Team Leaderboard' },
+                xAxis: {
+                    categories: teams.map(team => team.name),
+                    title: { text: null }
+                },
+                yAxis: {
+                    min: 0,
+                    title: { text: 'Points' },
+                    allowDecimals: false
+                },
+                legend: { enabled: false },
+                tooltip: {
+                    formatter: function() {
+                        const team = teams.find(t => t.name === this.key);
+                        return `<b>${this.key}</b><br/>Points: ${this.y}<br/>Flags: ${team.flags ? team.flags.length : 0}`;
+                    }
+                },
+                plotOptions: {
+                    bar: {
+                        dataLabels: { 
+                            enabled: true,
+                            formatter: function() {
+                                return `${this.key}: ${this.y} pts`;
+                            }
+                        },
+                        colorByPoint: true,
+                        colors: teams.map((team, i) => {
+                            const currentTeam = localStorage.getItem('ctfTeamName');
+                            return team.name === currentTeam ? '#FFD700' : // Gold for current team
+                                Highcharts.getOptions().colors[i % Highcharts.getOptions().colors.length];
+                        })
+                    }
+                },
+                series: [{
+                    name: 'Points',
+                    data: teams.map(team => ({
+                        name: team.name,
+                        y: team.score || 0
+                    }))
+                }]
+            });
+        }
+
+        // Initialize progress chart
+        function initProgressChart(data, teamName) {
+            window.progressChart = Highcharts.chart('progressChart', {
+                chart: { type: 'pie' },
+                title: { text: `Your Progress: ${teamName}` },
+                tooltip: {
+                    pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+                },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: true,
+                            format: '<b>{point.name}</b>: {point.y}'
+                        }
+                    }
+                },
+                series: [{
+                    name: 'Flags',
+                    colorByPoint: true,
+                    data: [{
+                        name: 'Solved',
+                        y: data.solved,
+                        color: '#28a745'
+                    }, {
+                        name: 'Unsolved',
+                        y: data.unsolved,
+                        color: '#dc3545'
+                    }]
+                }]
+            });
+        }
+
+        // Initialize difficulty chart
+        function initDifficultyChart(data, teamName) {
             window.difficultyChart = Highcharts.chart('difficultyChart', {
                 chart: { type: 'column' },
                 title: { text: `Your Difficulty Breakdown: ${teamName}` },
@@ -307,19 +390,22 @@
             });
         }
 
-        // Initial load
+        // Manual refresh button
+        document.getElementById('refreshBtn').addEventListener('click', function() {
+            fetch('https://ctf-backend-rose.vercel.app/api/teams')
+                .then(response => response.json())
+                .then(teams => {
+                    updateDashboardData(teams);
+                });
+        });
+
+        // Check if team is registered
         document.addEventListener('DOMContentLoaded', function() {
-            // Start polling for updates
-            pollLeaderboard();
-            
-            // Manual refresh button
-            document.getElementById('refreshBtn').addEventListener('click', function() {
-                fetch('https://ctf-backend-rose.vercel.app/api/teams')
-                    .then(response => response.json())
-                    .then(teams => {
-                        updateDashboardData(teams);
-                    });
-            });
+            const teamName = localStorage.getItem('ctfTeamName');
+            if (teamName) {
+                document.getElementById('teamDisplay').style.display = 'block';
+                document.getElementById('teamNameDisplay').textContent = teamName;
+            }
         });
     </script>
     <script>
