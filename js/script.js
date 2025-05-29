@@ -30,7 +30,7 @@ async function updateLeaderboard() {
           <td>${team.score}</td>
         </tr>
       `).join('');
-      renderTeamScoresChart(teams);
+      initLeaderboardChart(teams);
     }
   } catch (err) {
     console.error('Error fetching leaderboard:', err);
@@ -120,49 +120,249 @@ async function handleTimerControl(action) {
   }
 }
 
-function renderTeamScoresChart(teams) {
-  const ctx = document.querySelector('#scores-chart')?.getContext('2d');
-  if (ctx) {
-    new Chart(ctx, {
+function initLeaderboardChart(teams) {
+  window.leaderboardChart = Highcharts.chart('leaderboardChart', {
+    chart: { 
       type: 'bar',
-      data: {
-        labels: teams.map(team => team.name),
-        datasets: [{
-          label: 'Team Scores',
-          data: teams.map(team => team.score),
-          backgroundColor: ['#36A2EB', '#FF6384', '#FFCE56', '#4BC0C0', '#9966FF'],
-          borderColor: ['#2A80B9', '#CC4B37', '#D4A017', '#3A9A9A', '#7A52CC'],
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          y: { beginAtZero: true }
-        }
+      height: 400 + (teams.length * 20),
+      backgroundColor: '#ffffff',
+      style: {
+        color: '#333333'
       }
-    });
-  }
+    },
+    title: { 
+      text: 'Team Leaderboard',
+      align: 'center',
+      verticalAlign: 'top'
+    },
+    yAxis: {
+      min: 0,
+      title: { text: 'Points' },
+      allowDecimals: false
+    },
+    legend: { enabled: false },
+    tooltip: {
+      backgroundColor: '#ffffff',
+      borderColor: '#cccccc',
+      style: {
+        color: '#333333'
+      },
+      formatter: function() {
+        const team = teams.find(t => t.name === this.key);
+        return `<div style="color: #333">
+          <b>${this.key}</b><br/>
+          Points: ${this.y}<br/>
+          Flags: ${team.flagCount || 0}
+        </div>`;
+      }
+    },
+    plotOptions: {
+      bar: {
+        dataLabels: { 
+          enabled: true,
+          formatter: function() {
+            return `${this.key}: ${this.y} pts`;
+          }
+        },
+        colorByPoint: true,
+        colors: teams.map((team, i) => {
+          const currentTeam = localStorage.getItem('teamName');
+          return team.name === currentTeam ? '#FFD700' : // Gold for current team
+            Highcharts.getOptions().colors[i % Highcharts.getOptions().colors.length];
+        })
+      }
+    },
+    series: [{
+      name: 'Points',
+      data: teams.map(team => ({
+        name: team.name,
+        y: team.score || 0
+      }))
+    }]
+  });
 }
 
-function renderDifficultyChart(stats) {
-  const ctx = document.querySelector('#difficulty-chart')?.getContext('2d');
-  if (ctx) {
-    new Chart(ctx, {
+function initProgressChart(data, teamName) {
+  window.progressChart = Highcharts.chart('progressChart', {
+    chart: { 
       type: 'pie',
-      data: {
-        labels: ['Easy', 'Medium', 'Hard'],
-        datasets: [{
-          data: [stats.easy, stats.medium, stats.hard],
-          backgroundColor: ['#36A2EB', '#FFCE56', '#FF6384'],
-          borderColor: ['#2A80B9', '#D4A017', '#CC4B37'],
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true
+      backgroundColor: '#ffffff',
+      style: {
+        color: '#333333'
       }
+    },
+    title: {
+      text: '',
+      floating: true,
+      align: 'center',
+      verticalAlign: 'middle',
+      style: {
+        fontSize: '16px'
+      }
+    },
+    subtitle: {
+      text: `Your Progress: ${teamName}`,
+      align: 'center',
+      verticalAlign: 'bottom',
+      y: 30,
+      style: {
+        fontSize: '14px',
+        fontWeight: 'bold'
+      }
+    },
+    tooltip: {
+      backgroundColor: '#ffffff',
+      borderColor: '#cccccc',
+      style: {
+        color: '#333333'
+      },
+      pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+    },
+    plotOptions: {
+      pie: {
+        allowPointSelect: true,
+        cursor: 'pointer',
+        dataLabels: {
+          enabled: true,
+          format: '<b>{point.name}</b>: {point.y}'
+        }
+      }
+    },
+    series: [{
+      name: 'Flags',
+      colorByPoint: true,
+      data: [{
+        name: 'Solved',
+        y: data.solved,
+        color: '#28a745'
+      }, {
+        name: 'Unsolved',
+        y: data.unsolved,
+        color: '#dc3545'
+      }]
+    }]
+  });
+}
+
+function initDifficultyChart(data, teamName) {
+  window.difficultyChart = Highcharts.chart('difficultyChart', {
+    chart: { 
+      type: 'column',
+      backgroundColor: '#ffffff',
+      style: {
+        color: '#333333'
+      }
+    },
+    title: {
+      text: '',
+      floating: true,
+      align: 'center',
+      verticalAlign: 'middle',
+      style: {
+        fontSize: '16px'
+      }
+    },
+    subtitle: {
+      text: `Your Difficulty Breakdown: ${teamName}`,
+      align: 'center',
+      verticalAlign: 'bottom',
+      y: 30,
+      style: {
+        fontSize: '14px',
+        fontWeight: 'bold'
+      }
+    },
+    xAxis: {
+      categories: ['Easy', 'Medium', 'Hard'],
+      labels: {
+        style: {
+          color: '#333'
+        }
+      }
+    },
+    yAxis: {
+      min: 0,
+      title: { text: 'Flags Captured' },
+      allowDecimals: false,
+      stackLabels: {
+        enabled: true,
+        style: {
+          fontWeight: 'bold',
+          color: 'gray'
+        }
+      }
+    },
+    legend: {
+      align: 'right',
+      verticalAlign: 'top',
+      layout: 'vertical'
+    },
+    tooltip: {
+      backgroundColor: '#ffffff',
+      borderColor: '#cccccc',
+      style: {
+        color: '#333333'
+      },
+      headerFormat: '<b>Difficulty: {point.key}</b><br/>',
+      pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}'
+    },
+    plotOptions: {
+      column: {
+        stacking: 'normal',
+        dataLabels: {
+          enabled: true
+        }
+      }
+    },
+    series: [{
+      name: 'Solved',
+      data: [
+        data.easy.solved,
+        data.medium.solved,
+        data.hard.solved
+      ],
+      color: '#28a745'
+    }, {
+      name: 'Remaining',
+      data: [
+        data.easy.total - data.easy.solved,
+        data.medium.total - data.easy.solved,
+        data.hard.total - data.hard.solved
+      ],
+      color: '#dc3545'
+    }]
+  });
+}
+
+async function updateProgressAndDifficultyCharts() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/stats`);
+    const stats = await response.json();
+    const teamResponse = await fetch(`${API_BASE_URL}/teams?name=${teamName}`);
+    const teams = await teamResponse.json();
+    const currentTeam = teams.find(t => t.name === teamName) || { flagCount: 0, flags: [] };
+    
+    const progressData = {
+      solved: currentTeam.flagCount,
+      unsolved: 30 - currentTeam.flagCount // Total flags from index.html
+    };
+    
+    const difficultyData = {
+      easy: { solved: 0, total: stats.easy },
+      medium: { solved: 0, total: stats.medium },
+      hard: { solved: 0, total: stats.hard }
+    };
+    
+    currentTeam.flags.forEach(flag => {
+      if (flag.difficulty === 'easy') difficultyData.easy.solved++;
+      else if (flag.difficulty === 'medium') difficultyData.medium.solved++;
+      else if (flag.difficulty === 'hard') difficultyData.hard.solved++;
     });
+    
+    initProgressChart(progressData, teamName || 'Guest');
+    initDifficultyChart(difficultyData, teamName || 'Guest');
+  } catch (err) {
+    console.error('Error updating charts:', err);
   }
 }
 
@@ -181,7 +381,7 @@ socket.on('leaderboard', (teams) => {
         <td>${team.score}</td>
       </tr>
     `).join('');
-    renderTeamScoresChart(teams);
+    initLeaderboardChart(teams);
   }
 });
 
@@ -197,6 +397,7 @@ document.addEventListener('DOMContentLoaded', () => {
   updateTeamName();
   updateLeaderboard();
   updateTimer();
+  updateProgressAndDifficultyCharts();
 
   const registerForm = document.querySelector('#register-form');
   if (registerForm) {
@@ -217,15 +418,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const refreshBtn = document.querySelector('#refresh-stats');
   if (refreshBtn) {
-    refreshBtn.addEventListener('click', async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/stats`);
-        const stats = await response.json();
-        renderDifficultyChart(stats);
-        document.querySelector('#last-updated').textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
-      } catch (err) {
-        console.error('Error fetching stats:', err);
-      }
-    });
+    refreshBtn.addEventListener('click', updateProgressAndDifficultyCharts);
   }
 });
