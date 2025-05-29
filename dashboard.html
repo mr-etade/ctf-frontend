@@ -164,37 +164,47 @@
         }
 
         // Update all charts with new data
+        // In dashboard.html, replace the updateDashboardData function with this:
+
         function updateDashboardData(teams) {
-            const currentTeam = localStorage.getItem('ctfTeamName');
-            const currentTeamData = teams.find(team => team.name === currentTeam) || {};
+            const currentTeamName = localStorage.getItem('ctfTeamName');
+            const currentTeam = teams.find(team => team.name === currentTeamName);
             
             // Update timestamp
             document.getElementById('updateTime').textContent = new Date().toLocaleTimeString();
             
+            // If no current team found, don't update the charts
+            if (!currentTeam) {
+                console.error('Current team not found in leaderboard data');
+                return;
+            }
+            
             // Calculate stats for current team only
-            const teamFlags = currentTeamData.flags || [];
+            const teamFlags = currentTeam.flags || [];
             const progressData = {
                 solved: teamFlags.length,
                 unsolved: 30 - teamFlags.length // Assuming 30 total flags
             };
             
-            // Simplified difficulty breakdown for current team
+            // Calculate difficulty breakdown for current team
             const difficultyData = {
                 easy: { solved: 0, total: 10 },
                 medium: { solved: 0, total: 15 },
                 hard: { solved: 0, total: 5 }
             };
             
-            // Count flags by difficulty for current team
+            // Count flags by actual difficulty for current team
             teamFlags.forEach(flag => {
-                // This is simplified - you should have difficulty info in your flag data
-                // For now, we'll just distribute them evenly
-                if (difficultyData.easy.solved < 10) {
-                    difficultyData.easy.solved++;
-                } else if (difficultyData.medium.solved < 15) {
-                    difficultyData.medium.solved++;
-                } else {
-                    difficultyData.hard.solved++;
+                switch(flag.difficulty) {
+                    case 'easy':
+                        difficultyData.easy.solved++;
+                        break;
+                    case 'medium':
+                        difficultyData.medium.solved++;
+                        break;
+                    case 'hard':
+                        difficultyData.hard.solved++;
+                        break;
                 }
             });
 
@@ -218,9 +228,9 @@
                     { name: 'Solved', y: progressData.solved, color: '#28a745' },
                     { name: 'Unsolved', y: progressData.unsolved, color: '#dc3545' }
                 ]);
-                window.progressChart.setTitle({ text: `Your Progress: ${currentTeam}` });
+                window.progressChart.setTitle({ text: `Your Progress: ${currentTeamName}` });
             } else {
-                initProgressChart(progressData, currentTeam);
+                initProgressChart(progressData, currentTeamName);
             }
 
             // Update difficulty chart with current team data only
@@ -235,93 +245,10 @@
                     difficultyData.medium.total - difficultyData.medium.solved,
                     difficultyData.hard.total - difficultyData.hard.solved
                 ]);
-                window.difficultyChart.setTitle({ text: `Your Difficulty Breakdown: ${currentTeam}` });
+                window.difficultyChart.setTitle({ text: `Your Difficulty Breakdown: ${currentTeamName}` });
             } else {
-                initDifficultyChart(difficultyData, currentTeam);
+                initDifficultyChart(difficultyData, currentTeamName);
             }
-        }
-
-        // Initialize charts
-        function initLeaderboardChart(teams) {
-            window.leaderboardChart = Highcharts.chart('leaderboardChart', {
-                chart: { 
-                    type: 'bar',
-                    height: 400 + (teams.length * 20) // Dynamic height based on number of teams
-                },
-                title: { text: 'Team Leaderboard' },
-                xAxis: {
-                    categories: teams.map(team => team.name),
-                    title: { text: null }
-                },
-                yAxis: {
-                    min: 0,
-                    title: { text: 'Points' },
-                    allowDecimals: false
-                },
-                legend: { enabled: false },
-                tooltip: {
-                    formatter: function() {
-                        const team = teams.find(t => t.name === this.key);
-                        return `<b>${this.key}</b><br/>Points: ${this.y}<br/>Flags: ${team.flags ? team.flags.length : 0}`;
-                    }
-                },
-                plotOptions: {
-                    bar: {
-                        dataLabels: { 
-                            enabled: true,
-                            formatter: function() {
-                                return `${this.key}: ${this.y} pts`;
-                            }
-                        },
-                        colorByPoint: true,
-                        colors: teams.map((team, i) => {
-                            const currentTeam = localStorage.getItem('ctfTeamName');
-                            return team.name === currentTeam ? '#FFD700' : // Gold for current team
-                                Highcharts.getOptions().colors[i % Highcharts.getOptions().colors.length];
-                        })
-                    }
-                },
-                series: [{
-                    name: 'Points',
-                    data: teams.map(team => ({
-                        name: team.name,
-                        y: team.score || 0
-                    }))
-                }]
-            });
-        }
-
-        function initProgressChart(data) {
-            window.progressChart = Highcharts.chart('progressChart', {
-                chart: { type: 'pie' },
-                title: { text: `Your Progress: ${teamName}` },
-                tooltip: {
-                    pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
-                },
-                plotOptions: {
-                    pie: {
-                        allowPointSelect: true,
-                        cursor: 'pointer',
-                        dataLabels: {
-                            enabled: true,
-                            format: '<b>{point.name}</b>: {point.y}'
-                        }
-                    }
-                },
-                series: [{
-                    name: 'Flags',
-                    colorByPoint: true,
-                    data: [{
-                        name: 'Solved',
-                        y: data.solved,
-                        color: '#28a745'
-                    }, {
-                        name: 'Unsolved',
-                        y: data.unsolved,
-                        color: '#dc3545'
-                    }]
-                }]
-            });
         }
 
         function initDifficultyChart(data) {
