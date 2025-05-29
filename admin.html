@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Python Control Flow CTF - Register</title>
+    <title>Python Control Flow CTF - Admin</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
     <script src="https://code.highcharts.com/highcharts.js"></script>
@@ -12,27 +12,36 @@
 <body>
     <header>
         <h1>Python Control Flow CTF</h1>
-        <h2>Team Registration</h2>
+        <h2>Admin Panel</h2>
     </header>
     <main>
         <section>
-            <h2>Register Your Team</h2>
-            <form id="register-form">
-                <label for="team-name">Team Name</label>
-                <input type="text" id="team-name" placeholder="Choose a unique name for your team" required>
-                <label for="team-password">Team Password</label>
-                <input type="password" id="team-password" placeholder="Choose a secure password" required>
-                <button type="submit">Register</button>
-            </form>
-            <div id="success-message" style="display: none;">
-                <p>Registration Successful!</p>
-                <p>Your team <span class="team-name">Guest</span> is now registered.</p>
-                <p>You can now participate in the CTF challenge.</p>
-                <a href="index.html">Back to Home</a>
+            <h2>Timer Controls</h2>
+            <div>
+                <button id="start-timer">Start</button>
+                <button id="pause-timer">Pause</button>
+                <button id="reset-timer">Reset</button>
             </div>
+            <p id="timer">01:00:00</p>
+        </section>
+        <section>
+            <h2>Leaderboard</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Team</th>
+                        <th>Score</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body"></tbody>
+            </table>
+        </section>
+        <section>
+            <h2>Team Scores Chart</h2>
+            <div id="leaderboardChart" style="height: 400px;"></div>
         </section>
     </main>
-    <a href="index.html">← Back to Home</a>
     <footer>
         <p>CMN115/CBS105 Introduction to Programming 2025 | Prepared by Mr. Eremas Tade</p>
     </footer>
