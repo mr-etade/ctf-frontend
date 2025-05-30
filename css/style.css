@@ -191,9 +191,12 @@ tr:hover {
 }
 
 /* Charts */
-canvas {
+#leaderboardChart, #progressChart, #difficultyChart {
+    width: 100%;
     max-width: 100%;
     margin: 1rem 0;
+    background-color: #fff;
+    border-radius: 8px;
 }
 
 /* Timer controls (admin.html) */
@@ -257,11 +260,4 @@ footer {
     table {
         font-size: 0.9rem;
     }
-}
-/* Charts */
-#leaderboardChart, #progressChart, #difficultyChart {
-    margin: 1rem 0;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
