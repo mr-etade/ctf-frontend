@@ -1,5 +1,4 @@
 const socket = io('https://ctf-websocket-g3l9.onrender.com'); // Replace with your Render URL
-
 const API_BASE_URL = 'https://ctf-backend-rose.vercel.app/api';
 
 const teamName = localStorage.getItem('teamName');
@@ -124,7 +123,6 @@ function initLeaderboardChart(teams) {
   window.leaderboardChart = Highcharts.chart('leaderboardChart', {
     chart: { 
       type: 'bar',
-      height: 400 + (teams.length * 20),
       backgroundColor: '#ffffff',
       style: {
         color: '#333333'
@@ -141,6 +139,22 @@ function initLeaderboardChart(teams) {
       allowDecimals: false
     },
     legend: { enabled: false },
+    exporting: {
+      enabled: true,
+      buttons: {
+        contextButton: {
+          menuItems: [
+            'viewFullscreen',
+            'printChart',
+            'separator',
+            'downloadPNG',
+            'downloadJPEG',
+            'downloadPDF',
+            'downloadSVG'
+          ]
+        }
+      }
+    },
     tooltip: {
       backgroundColor: '#ffffff',
       borderColor: '#cccccc',
@@ -208,6 +222,22 @@ function initProgressChart(data, teamName) {
       style: {
         fontSize: '14px',
         fontWeight: 'bold'
+      }
+    },
+    exporting: {
+      enabled: true,
+      buttons: {
+        contextButton: {
+          menuItems: [
+            'viewFullscreen',
+            'printChart',
+            'separator',
+            'downloadPNG',
+            'downloadJPEG',
+            'downloadPDF',
+            'downloadSVG'
+          ]
+        }
       }
     },
     tooltip: {
@@ -297,6 +327,22 @@ function initDifficultyChart(data, teamName) {
       verticalAlign: 'top',
       layout: 'vertical'
     },
+    exporting: {
+      enabled: true,
+      buttons: {
+        contextButton: {
+          menuItems: [
+            'viewFullscreen',
+            'printChart',
+            'separator',
+            'downloadPNG',
+            'downloadJPEG',
+            'downloadPDF',
+            'downloadSVG'
+          ]
+        }
+      }
+    },
     tooltip: {
       backgroundColor: '#ffffff',
       borderColor: '#cccccc',
@@ -326,7 +372,7 @@ function initDifficultyChart(data, teamName) {
       name: 'Remaining',
       data: [
         data.easy.total - data.easy.solved,
-        data.medium.total - data.easy.solved,
+        data.medium.total - data.medium.solved,
         data.hard.total - data.hard.solved
       ],
       color: '#dc3545'
@@ -338,7 +384,7 @@ async function updateProgressAndDifficultyCharts() {
   try {
     const response = await fetch(`${API_BASE_URL}/stats`);
     const stats = await response.json();
-    const teamResponse = await fetch(`${API_BASE_URL}/teams?name=${teamName}`);
+    const teamResponse = await fetch(`${API_BASE_URL}/teams`);
     const teams = await teamResponse.json();
     const currentTeam = teams.find(t => t.name === teamName) || { flagCount: 0, flags: [] };
     
@@ -353,11 +399,13 @@ async function updateProgressAndDifficultyCharts() {
       hard: { solved: 0, total: stats.hard }
     };
     
-    currentTeam.flags.forEach(flag => {
-      if (flag.difficulty === 'easy') difficultyData.easy.solved++;
-      else if (flag.difficulty === 'medium') difficultyData.medium.solved++;
-      else if (flag.difficulty === 'hard') difficultyData.hard.solved++;
-    });
+    if (currentTeam.flags) {
+      currentTeam.flags.forEach(flag => {
+        if (flag.difficulty === 'easy') difficultyData.easy.solved++;
+        else if (flag.difficulty === 'medium') difficultyData.medium.solved++;
+        else if (flag.difficulty === 'hard') difficultyData.hard.solved++;
+      });
+    }
     
     initProgressChart(progressData, teamName || 'Guest');
     initDifficultyChart(difficultyData, teamName || 'Guest');
