@@ -5,11 +5,21 @@
     box-sizing: border-box;
 }
 
+:root {
+    --navy-blue: #002366;
+    --gold: #FFD700;
+    --light-gold: #FFECB3;
+    --dark-blue: #001a4d;
+    --white: #ffffff;
+    --light-gray: #f8f9fa;
+    --dark-gray: #343a40;
+}
+
 body {
     font-family: 'Arial', sans-serif;
     line-height: 1.6;
-    color: #333;
-    background-color: #f4f4f4;
+    color: var(--dark-gray);
+    background-color: var(--light-gray);
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -17,20 +27,23 @@ body {
 
 /* Header */
 header {
-    background-color: #2c3e50;
-    color: #fff;
-    padding: 1rem;
+    background: linear-gradient(135deg, var(--navy-blue), var(--dark-blue));
+    color: var(--white);
+    padding: 1.5rem;
     text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 header h1 {
     font-size: 2.5rem;
     margin-bottom: 0.5rem;
+    letter-spacing: 1px;
 }
 
 header h2 {
     font-size: 1.5rem;
     margin-bottom: 0.5rem;
+    color: var(--gold);
 }
 
 header p {
@@ -39,57 +52,76 @@ header p {
 
 .team-name {
     font-weight: bold;
-    color: #3498db;
+    color: var(--gold);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 /* Main content */
 main {
     flex: 1;
-    max-width: 1200px;
+    width: 100%;
     margin: 2rem auto;
-    padding: 0 1rem;
+    padding: 0 1.5rem;
 }
 
 section {
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
+    background-color: var(--white);
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 h2, h3, h4 {
-    color: #2c3e50;
+    color: var(--navy-blue);
     margin-bottom: 1rem;
+    border-bottom: 2px solid var(--gold);
+    padding-bottom: 0.5rem;
 }
 
 /* Timer */
 #timer {
-    font-size: 2rem;
+    font-size: 3rem;
     font-weight: bold;
-    color: #e74c3c;
+    color: var(--navy-blue);
     text-align: center;
-    margin: 1rem 0;
+    margin: 1.5rem 0;
+    font-family: 'Courier New', monospace;
+    background-color: var(--light-gold);
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 /* Grid layout for cards (index.html) */
 .grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
+    gap: 2rem;
 }
 
 .card {
-    background-color: #fff;
+    background-color: var(--white);
     border-radius: 8px;
     padding: 1.5rem;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+    border-top: 4px solid var(--gold);
+}
+
+.card:hover {
+    transform: translateY(-5px);
 }
 
 .card h3 {
     font-size: 1.4rem;
     margin-bottom: 0.5rem;
+    color: var(--navy-blue);
 }
 
 .card h4 {
     font-size: 1.2rem;
-    color: #3498db;
+    color: var(--navy-blue);
 }
 
 .card p, .card ul {
@@ -97,142 +129,206 @@ h2, h3, h4 {
 }
 
 .card ul {
-    list-style: disc;
-    padding-left: 1.5rem;
+    list-style: none;
+    padding-left: 0;
+}
+
+.card ul li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.card ul li:before {
+    content: "•";
+    color: var(--gold);
+    font-weight: bold;
+    display: inline-block;
+    width: 1em;
+    margin-left: -1em;
 }
 
 /* Forms (register.html, submit.html) */
 form {
-    background-color: #fff;
-    padding: 1.5rem;
+    background-color: var(--white);
+    padding: 2rem;
     border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    max-width: 500px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
     margin: 0 auto;
+    border-top: 4px solid var(--gold);
 }
 
 label {
     display: block;
     font-weight: bold;
     margin-bottom: 0.5rem;
+    color: var(--navy-blue);
 }
 
 input[type="text"],
 input[type="password"] {
     width: 100%;
-    padding: 0.8rem;
-    margin-bottom: 1rem;
-    border: 1px solid #ccc;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 1rem;
+    transition: border 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus {
+    border-color: var(--gold);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
 }
 
 button {
-    background-color: #3498db;
-    color: #fff;
-    padding: 0.8rem 1.5rem;
+    background-color: var(--navy-blue);
+    color: var(--white);
+    padding: 1rem 2rem;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-size: 1rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 button:hover {
-    background-color: #2980b9;
+    background-color: var(--dark-blue);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Success and error messages */
 #success-message,
 #flag-success,
 #flag-error {
-    margin-top: 1rem;
-    padding: 1rem;
-    border-radius: 4px;
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    border-radius: 8px;
     text-align: center;
+    font-weight: bold;
 }
 
 #success-message,
 #flag-success {
-    background-color: #2ecc71;
-    color: #fff;
+    background-color: #28a745;
+    color: var(--white);
 }
 
 #flag-error {
-    background-color: #e74c3c;
-    color: #fff;
+    background-color: #dc3545;
+    color: var(--white);
 }
 
 /* Tables (dashboard.html, admin.html) */
 table {
     width: 100%;
     border-collapse: collapse;
-    background-color: #fff;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    background-color: var(--white);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
     overflow: hidden;
 }
 
 th, td {
-    padding: 1rem;
+    padding: 1.2rem;
     text-align: left;
 }
 
 th {
-    background-color: #2c3e50;
-    color: #fff;
+    background-color: var(--navy-blue);
+    color: var(--white);
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 tr:nth-child(even) {
-    background-color: #f9f9f9;
+    background-color: #f8f9fa;
 }
 
 tr:hover {
-    background-color: #f1f1f1;
+    background-color: var(--light-gold);
 }
 
 /* Charts */
+.highcharts-container {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.highcharts-root {
+    width: 100% !important;
+    height: 100% !important;
+}
+
 #leaderboardChart, #progressChart, #difficultyChart {
-    width: 100%;
-    max-width: 100%;
+    width: 100% !important;
+    height: 400px !important;
     margin: 1rem 0;
-    background-color: #fff;
     border-radius: 8px;
 }
 
 /* Timer controls (admin.html) */
 #start-timer, #pause-timer, #reset-timer {
-    margin-right: 0.5rem;
+    margin-right: 1rem;
+    margin-bottom: 1rem;
+}
+
+#start-timer {
+    background-color: #28a745;
+}
+
+#pause-timer {
+    background-color: #ffc107;
+    color: var(--dark-gray);
+}
+
+#reset-timer {
+    background-color: #dc3545;
 }
 
 /* Refresh button (dashboard.html) */
 #refresh-stats {
-    background-color: #2ecc71;
+    background-color: var(--navy-blue);
     margin-left: 1rem;
 }
 
 #refresh-stats:hover {
-    background-color: #27ae60;
+    background-color: var(--dark-blue);
 }
 
 /* Links */
 a {
-    color: #3498db;
+    color: var(--navy-blue);
     text-decoration: none;
     display: inline-block;
-    margin: 1rem 0;
+    margin: 1.5rem 0;
+    font-weight: bold;
+    transition: color 0.3s ease;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
 }
 
 a:hover {
-    text-decoration: underline;
+    color: var(--dark-blue);
+    text-decoration: none;
+    background-color: var(--light-gold);
 }
 
 /* Footer */
 footer {
-    background-color: #2c3e50;
-    color: #fff;
+    background: linear-gradient(135deg, var(--navy-blue), var(--dark-blue));
+    color: var(--white);
     text-align: center;
-    padding: 1rem;
+    padding: 1.5rem;
     margin-top: auto;
+    font-size: 0.9rem;
 }
 
 /* Responsive design */
@@ -246,7 +342,7 @@ footer {
     }
 
     #timer {
-        font-size: 1.5rem;
+        font-size: 2rem;
     }
 
     .grid {
@@ -254,10 +350,29 @@ footer {
     }
 
     form {
-        padding: 1rem;
+        padding: 1.5rem;
     }
 
     table {
         font-size: 0.9rem;
     }
+
+    th, td {
+        padding: 0.8rem;
+    }
+}
+
+/* Full-width chart containers */
+.chart-container {
+    width: 100%;
+    height: 500px;
+    margin: 2rem 0;
+}
+
+/* Admin specific styles */
+.admin-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
 }
