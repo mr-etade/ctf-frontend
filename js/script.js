@@ -1,4 +1,4 @@
-const socket = io('https://ctf-websocket-g3l9.onrender.com'); // Replace with your Render URL
+const socket = io('https://ctf-websocket-g3l9.onrender.com'); 
 const API_BASE_URL = 'https://ctf-backend-rose.vercel.app/api';
 
 const teamName = localStorage.getItem('teamName');
@@ -54,6 +54,7 @@ async function handleRegistration(event) {
   const teamNameInput = document.querySelector('#team-name');
   const passwordInput = document.querySelector('#team-password');
   const successMessage = document.querySelector('#success-message');
+  const successTeamName = successMessage.querySelector('.team-name');
   const teamName = teamNameInput.value;
   const password = passwordInput.value;
 
@@ -65,6 +66,9 @@ async function handleRegistration(event) {
     });
     if (response.ok) {
       localStorage.setItem('teamName', teamName);
+      if (successTeamName) {
+        successTeamName.textContent = teamName;
+      }
       successMessage.style.display = 'block';
       teamNameInput.value = '';
       passwordInput.value = '';
