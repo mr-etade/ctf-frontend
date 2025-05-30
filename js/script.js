@@ -127,9 +127,9 @@ function initLeaderboardChart(teams) {
   window.leaderboardChart = Highcharts.chart('leaderboardChart', {
     chart: { 
       type: 'bar',
-      backgroundColor: '#ffffff',
+      backgroundColor: 'transparent',
       style: {
-        color: '#333333'
+          fontFamily: 'Arial, sans-serif'
       }
     },
     title: { 
@@ -196,7 +196,21 @@ function initLeaderboardChart(teams) {
         name: team.name,
         y: team.score || 0
       }))
-    }]
+    }],
+    responsive: {
+      rules: [{
+        condition: {
+          maxWidth: 768
+        },
+        chartOptions: {
+          legend: {
+            align: 'center',
+            verticalAlign: 'bottom',
+            layout: 'horizontal'
+          }
+        }
+      }]
+    }
   });
 }
 
@@ -204,9 +218,9 @@ function initProgressChart(data, teamName) {
   window.progressChart = Highcharts.chart('progressChart', {
     chart: { 
       type: 'pie',
-      backgroundColor: '#ffffff',
+      backgroundColor: 'transparent',
       style: {
-        color: '#333333'
+        fontFamily: 'Arial, sans-serif'
       }
     },
     title: {
@@ -274,7 +288,21 @@ function initProgressChart(data, teamName) {
         y: data.unsolved,
         color: '#dc3545'
       }]
-    }]
+    }],
+    responsive: {
+      rules: [{
+        condition: {
+          maxWidth: 768
+        },
+        chartOptions: {
+          legend: {
+            align: 'center',
+            verticalAlign: 'bottom',
+            layout: 'horizontal'
+          }
+        }
+      }]
+    }
   });
 }
 
@@ -282,9 +310,9 @@ function initDifficultyChart(data, teamName) {
   window.difficultyChart = Highcharts.chart('difficultyChart', {
     chart: { 
       type: 'column',
-      backgroundColor: '#ffffff',
+      backgroundColor: 'transparent',
       style: {
-        color: '#333333'
+        fontFamily: 'Arial, sans-serif'
       }
     },
     title: {
@@ -380,7 +408,21 @@ function initDifficultyChart(data, teamName) {
         data.hard.total - data.hard.solved
       ],
       color: '#dc3545'
-    }]
+    }],
+    responsive: {
+      rules: [{
+        condition: {
+          maxWidth: 768
+        },
+        chartOptions: {
+          legend: {
+            align: 'center',
+            verticalAlign: 'bottom',
+            layout: 'horizontal'
+          }
+        }
+      }]
+    }
   });
 }
 
