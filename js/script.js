@@ -127,7 +127,7 @@ function initLeaderboardChart(teams) {
   window.leaderboardChart = Highcharts.chart('leaderboardChart', {
     chart: { 
       type: 'bar',
-      backgroundColor: 'transparent',
+      backgroundColor: '#FFFFFF',
       style: {
           fontFamily: 'Arial, sans-serif'
       }
@@ -218,7 +218,7 @@ function initProgressChart(data, teamName) {
   window.progressChart = Highcharts.chart('progressChart', {
     chart: { 
       type: 'pie',
-      backgroundColor: 'transparent',
+      backgroundColor: '#FFFFFF',
       style: {
         fontFamily: 'Arial, sans-serif'
       }
@@ -310,7 +310,7 @@ function initDifficultyChart(data, teamName) {
   window.difficultyChart = Highcharts.chart('difficultyChart', {
     chart: { 
       type: 'column',
-      backgroundColor: 'transparent',
+      backgroundColor: '#FFFFFF',
       style: {
         fontFamily: 'Arial, sans-serif'
       }
