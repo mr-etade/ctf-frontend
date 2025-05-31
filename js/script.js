@@ -2,6 +2,7 @@ const socket = io('https://ctf-websocket-g3l9.onrender.com');
 const API_BASE_URL = 'https://ctf-backend-rose.vercel.app/api';
 
 const teamName = localStorage.getItem('teamName');
+const SUBMIT_END_TIME = 0; // Time in milliseconds when submissions should end (00:00)
 
 function updateTeamName() {
   const teamElements = document.querySelectorAll('.team-name');
@@ -43,9 +44,44 @@ async function updateTimer() {
     const timerDisplay = document.querySelector('#timer');
     if (timerDisplay) {
       timerDisplay.textContent = formatTime(timer.timeLeft);
+      
+      // Disable submissions when time reaches 00:00
+      if (timer.timeLeft <= SUBMIT_END_TIME) {
+        const submitPage = document.querySelector('body.submit-page');
+        if (submitPage) {
+          submitPage.innerHTML = `
+            <header>
+              <h1>Python Control Flow CTF</h1>
+              <h2>Time's Up!</h2>
+              <p>Team: <span class="team-name">${teamName || 'Guest'}</span></p>
+            </header>
+            <main>
+              <section>
+                <h2>Submission Closed</h2>
+                <p>The CTF has ended. Flag submissions are no longer being accepted.</p>
+                <a href="dashboard.html">View Leaderboard</a>
+              </section>
+            </main>
+            <footer>
+              <p>CMN115/CBS105 Introduction to Programming 2025 | Prepared by Mr. Eremas Tade</p>
+            </footer>
+          `;
+        }
+      }
     }
   } catch (err) {
     console.error('Error fetching timer:', err);
+  }
+}
+
+// Add this function to check authentication
+function checkAuth() {
+  const teamName = localStorage.getItem('teamName');
+  const currentPage = document.body.classList.contains('submit-page') || 
+                     document.body.classList.contains('dashboard-page');
+  
+  if (currentPage && !teamName) {
+    window.location.href = 'register.html';
   }
 }
 
@@ -138,6 +174,11 @@ function initLeaderboardChart(teams) {
       verticalAlign: 'top'
     },
     yAxis: {
+      categories: teams.map(team => team.name), // Show team names instead of numbers
+      title: { text: 'Teams' },
+      allowDecimals: false
+    },
+    xAxis: {
       min: 0,
       title: { text: 'Points' },
       allowDecimals: false
@@ -236,10 +277,11 @@ function initProgressChart(data, teamName) {
       text: `Your Progress: ${teamName}`,
       align: 'center',
       verticalAlign: 'bottom',
-      y: 40,
+      y: 30,
       style: {
-        fontSize: '14px',
-        fontWeight: 'bold'
+        fontSize: '16px',
+        fontWeight: 'bold',
+        color: '#002366' // Navy blue
       }
     },
     exporting: {
@@ -328,10 +370,11 @@ function initDifficultyChart(data, teamName) {
       text: `Your Difficulty Breakdown: ${teamName}`,
       align: 'center',
       verticalAlign: 'bottom',
-      y: 40,
+      y: 30,
       style: {
-        fontSize: '14px',
-        fontWeight: 'bold'
+        fontSize: '16px',
+        fontWeight: 'bold',
+        color: '#002366' // Navy blue
       }
     },
     xAxis: {
