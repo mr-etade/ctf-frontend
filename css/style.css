@@ -376,3 +376,33 @@ footer {
     gap: 1rem;
     margin-bottom: 1.5rem;
 }
+/* Add to your existing styles */
+.submit-page main, 
+.dashboard-page main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+.time-up-message {
+    text-align: center;
+    padding: 2rem;
+    background-color: var(--white);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin: 2rem 0;
+}
+.time-up-message h2 {
+    color: var(--navy-blue);
+    margin-bottom: 1rem;
+}
+.time-up-message p {
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+}
+/* Ensure charts display team names properly */
+.highcharts-yaxis-labels text {
+    font-size: 12px !important;
+    font-weight: bold !important;
+    color: var(--navy-blue) !important;
+}
