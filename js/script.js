@@ -236,7 +236,7 @@ function initProgressChart(data, teamName) {
       text: `Your Progress: ${teamName}`,
       align: 'center',
       verticalAlign: 'bottom',
-      y: 50,
+      y: 10,
       style: {
         fontSize: '14px',
         fontWeight: 'bold'
@@ -328,7 +328,7 @@ function initDifficultyChart(data, teamName) {
       text: `Your Difficulty Breakdown: ${teamName}`,
       align: 'center',
       verticalAlign: 'bottom',
-      y: 50,
+      y: 10,
       style: {
         fontSize: '14px',
         fontWeight: 'bold'
