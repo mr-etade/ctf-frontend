@@ -11,7 +11,7 @@
     <script src="https://code.highcharts.com/modules/offline-exporting.js"></script>
     <script src="js/script.js"></script>
 </head>
-<body>
+<body class="dashboard-page">
     <header>
         <h1>Python Control Flow CTF</h1>
         <h2>Live Dashboard</h2>
@@ -37,6 +37,10 @@
                 </thead>
                 <tbody id="leaderboard-body"></tbody>
             </table>
+        </section>
+        <section class="chart-container">
+            <h2>Team Scores Chart</h2>
+            <div id="leaderboardChart"></div>
         </section>
         <section class="chart-container">
             <div>
