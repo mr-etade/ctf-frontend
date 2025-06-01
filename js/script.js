@@ -173,7 +173,7 @@ function initLeaderboardChart(teams) {
       align: 'center',
       verticalAlign: 'top'
     },
-    yAxis: {
+    xAxis: {
       categories: teams.map(team => team.name), // Show team names instead of numbers
       title: { text: 'Teams' },
       allowDecimals: false
