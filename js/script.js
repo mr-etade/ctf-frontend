@@ -287,6 +287,8 @@ function initLeaderboardChart(teams) {
 }
 
 function initProgressChart(data, teamName) {
+  const totalFlags = 60; // 15 Easy + 30 Medium + 15 Hard
+
   window.progressChart = Highcharts.chart('progressChart', {
     chart: { 
       type: 'pie',
@@ -355,11 +357,11 @@ function initProgressChart(data, teamName) {
       data: [{
         name: 'Solved',
         y: data.solved,
-        color: '#28a745'
+        color: '#28a745' // Green
       }, {
-        name: 'Unsolved',
-        y: data.unsolved,
-        color: '#dc3545'
+        name: 'Remaining',
+        y: totalFlags - data.solved,
+        color: '#dc3545' // Red
       }]
     }],
     responsive: {
@@ -473,15 +475,15 @@ function initDifficultyChart(data, teamName) {
         data.medium.solved,
         data.hard.solved
       ],
-      color: '#28a745'
+      color: '#28a745' // Green
     }, {
       name: 'Remaining',
       data: [
-        data.easy.total - data.easy.solved,
-        data.medium.total - data.medium.solved,
-        data.hard.total - data.hard.solved
+        15 - data.easy.solved,   // 15 total Easy flags
+        30 - data.medium.solved, // 30 total Medium flags
+        15 - data.hard.solved    // 15 total Hard flags
       ],
-      color: '#dc3545'
+      color: '#dc3545' // Red
     }],
     responsive: {
       rules: [{
@@ -510,13 +512,13 @@ async function updateProgressAndDifficultyCharts() {
     
     const progressData = {
       solved: currentTeam.flagCount,
-      unsolved: 30 - currentTeam.flagCount // Total flags from index.html
+      unsolved: 60 - currentTeam.flagCount // Total flags is now 60
     };
     
     const difficultyData = {
-      easy: { solved: 0, total: stats.easy },
-      medium: { solved: 0, total: stats.medium },
-      hard: { solved: 0, total: stats.hard }
+      easy: { solved: 0, total: 15 },    // 15 Easy flags
+      medium: { solved: 0, total: 30 },  // 30 Medium flags
+      hard: { solved: 0, total: 15 }     // 15 Hard flags
     };
     
     if (currentTeam.flags) {
