@@ -3,6 +3,39 @@ const API_BASE_URL = 'https://ctf-backend-rose.vercel.app/api';
 
 const teamName = localStorage.getItem('teamName');
 const SUBMIT_END_TIME = 0; // Time in milliseconds when submissions should end (00:00)
+const ADMIN_PASSWORD = "admin123**##";
+let leaderboardRefreshInterval;
+
+// Add this function to check admin access
+function checkAdminAccess() {
+  if (window.location.pathname.includes('admin.html')) {
+    const password = prompt("Enter admin password:");
+    if (password !== ADMIN_PASSWORD) {
+      window.location.href = 'index.html';
+    }
+  }
+}
+
+// Add this function
+function startLeaderboardRefresh() {
+  if (window.location.pathname.includes('admin.html')) {
+    // Refresh every 5 seconds
+    leaderboardRefreshInterval = setInterval(async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/teams`);
+        const teams = await response.json();
+        if (window.leaderboardChart) {
+          window.leaderboardChart.series[0].setData(teams.map(team => ({
+            name: team.name,
+            y: team.score || 0
+          })), true);
+        }
+      } catch (err) {
+        console.error('Error refreshing leaderboard:', err);
+      }
+    }, 5000);
+  }
+}
 
 function updateTeamName() {
   const teamElements = document.querySelectorAll('.team-name');
@@ -22,14 +55,17 @@ async function updateLeaderboard() {
     const response = await fetch(`${API_BASE_URL}/teams`);
     const teams = await response.json();
     const leaderboardBody = document.querySelector('#leaderboard-body');
+    const currentTeam = localStorage.getItem('teamName');
+    
     if (leaderboardBody) {
       leaderboardBody.innerHTML = teams.map((team, index) => `
-        <tr>
+        <tr ${team.name === currentTeam ? 'class="current-team"' : ''}>
           <td>${index + 1}</td>
           <td>${team.name}</td>
           <td>${team.score}</td>
         </tr>
       `).join('');
+      
       initLeaderboardChart(teams);
     }
   } catch (err) {
@@ -525,7 +561,16 @@ socket.on('timer', (data) => {
   }
 });
 
+// Clean up interval when leaving page
+window.addEventListener('beforeunload', () => {
+  if (leaderboardRefreshInterval) {
+    clearInterval(leaderboardRefreshInterval);
+  }
+});
+
 document.addEventListener('DOMContentLoaded', () => {
+  startLeaderboardRefresh();
+  checkAdminAccess();
   updateTeamName();
   updateLeaderboard();
   updateTimer();
