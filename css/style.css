@@ -429,3 +429,8 @@ footer {
     color: var(--navy-blue);
     border-bottom: 2px solid var(--gold);
 }
+#registered-team-name {
+    font-weight: bold;
+    color: var(--gold);
+    text-decoration: underline;
+}
