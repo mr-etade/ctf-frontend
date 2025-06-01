@@ -178,11 +178,6 @@ function initLeaderboardChart(teams) {
       title: { text: 'Teams' },
       allowDecimals: false
     },
-    xAxis: {
-      min: 0,
-      title: { text: 'Points' },
-      allowDecimals: false
-    },
     legend: { enabled: false },
     exporting: {
       enabled: true,
