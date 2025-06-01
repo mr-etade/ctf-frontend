@@ -126,7 +126,7 @@ async function handleRegistration(event) {
   const teamNameInput = document.querySelector('#team-name');
   const passwordInput = document.querySelector('#team-password');
   const successMessage = document.querySelector('#success-message');
-  const successTeamName = successMessage.querySelector('.team-name');
+  const registeredTeamName = document.querySelector('#registered-team-name');
   const teamName = teamNameInput.value;
   const password = passwordInput.value;
 
@@ -138,8 +138,8 @@ async function handleRegistration(event) {
     });
     if (response.ok) {
       localStorage.setItem('teamName', teamName);
-      if (successTeamName) {
-        successTeamName.textContent = teamName;
+      if (registeredTeamName) {
+        registeredTeamName.textContent = teamName; // Update the specific span
       }
       successMessage.style.display = 'block';
       teamNameInput.value = '';
