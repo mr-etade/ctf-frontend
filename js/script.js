@@ -287,7 +287,7 @@ function initLeaderboardChart(teams) {
 }
 
 function initProgressChart(data, teamName) {
-  const totalFlags = 60; // 15 Easy + 30 Medium + 15 Hard
+  const totalFlags = 36; // 15 Easy + 21 Medium
 
   window.progressChart = Highcharts.chart('progressChart', {
     chart: { 
@@ -411,7 +411,7 @@ function initDifficultyChart(data, teamName) {
       }
     },
     xAxis: {
-      categories: ['Easy', 'Medium', 'Hard'],
+      categories: ['Easy', 'Medium'],
       labels: {
         style: {
           color: '#333'
@@ -472,16 +472,14 @@ function initDifficultyChart(data, teamName) {
       name: 'Solved',
       data: [
         data.easy.solved,
-        data.medium.solved,
-        data.hard.solved
+        data.medium.solved
       ],
       color: '#28a745' // Green
     }, {
       name: 'Remaining',
       data: [
         15 - data.easy.solved,   // 15 total Easy flags
-        30 - data.medium.solved, // 30 total Medium flags
-        15 - data.hard.solved    // 15 total Hard flags
+        21 - data.medium.solved, // 21 total Medium flags
       ],
       color: '#dc3545' // Red
     }],
