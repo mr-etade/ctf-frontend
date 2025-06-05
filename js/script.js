@@ -517,8 +517,8 @@ async function updateProgressAndDifficultyCharts() {
     
     const difficultyData = {
       easy: { solved: 0, total: 15 },    // 15 Easy flags
-      medium: { solved: 0, total: 30 },  // 30 Medium flags
-      hard: { solved: 0, total: 15 }     // 15 Hard flags
+      medium: { solved: 0, total: 21 }  // 21 Medium flags
+      //hard: { solved: 0, total: 15 }     // 15 Hard flags
     };
     
     if (currentTeam.flags) {
